@@ -1,0 +1,40 @@
+# Dependencias
+node_modules/
+package-lock.json
+
+# Variables de entorno
+.env
+
+# Certificados (sensible)
+cert/*.p12
+cert/*.pfx
+cert/*.pem
+cert/*.key
+
+# Logs
+logs/*.xml
+logs/*.zip
+logs/*.json
+
+# Archivos firmados para comparación
+firmados/*.xml
+!firmados/README.md
+
+# Archivos validados de referencia (pueden contener info sensible)
+validados_dian/*.xml
+!validados_dian/README.md
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos temporales
+*.tmp
+*.temp

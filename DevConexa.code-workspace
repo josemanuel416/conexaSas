@@ -1,0 +1,243 @@
+{
+  "folders": [
+    {
+      "name": "DevConexa",
+      "path": "."
+    },
+    {
+      "name": "ErpConexa (Frontend)",
+      "path": "ErpConexa"
+    },
+    {
+      "name": "Sever.Conexa (API)",
+      "path": "Sever.Conexa"
+    },
+    {
+      "name": "ServerFEpos (Facturación DIAN)",
+      "path": "ServerFEpos"
+    },
+    {
+      "name": "ChatBoot (WhatsApp)",
+      "path": "ChatBoot"
+    },
+    {
+      "name": "Scripts (SQL y docs)",
+      "path": "Scripts"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/.quasar": true,
+      "**/dist": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/.quasar": true,
+      "**/package-lock.json": true
+    },
+    "editor.formatOnSave": true,
+    "terminal.integrated.cwd": "${workspaceFolder:DevConexa}"
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "Vue.volar",
+      "oxc.oxc-vscode",
+      "ms-azuretools.vscode-docker",
+      "EditorConfig.EditorConfig"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Sever.Conexa: API",
+        "type": "node",
+        "request": "launch",
+        "cwd": "${workspaceFolder:Sever.Conexa (API)}",
+        "program": "${workspaceFolder:Sever.Conexa (API)}/src/index.js",
+        "envFile": "${workspaceFolder:Sever.Conexa (API)}/.env"
+      },
+      {
+        "name": "ErpConexa: Frontend",
+        "type": "node",
+        "request": "launch",
+        "cwd": "${workspaceFolder:ErpConexa (Frontend)}",
+        "runtimeExecutable": "npm",
+        "runtimeArgs": ["run", "dev"]
+      }
+    ],
+    "compounds": [
+      {
+        "name": "ERP completo (API + Frontend)",
+        "configurations": ["Sever.Conexa: API", "ErpConexa: Frontend"],
+        "stopAll": true
+      }
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Docker: PostgreSQL",
+        "type": "shell",
+        "command": "docker compose up -d",
+        "options": {
+          "cwd": "${workspaceFolder:DevConexa}"
+        },
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "shared"
+        }
+      },
+      {
+        "label": "Sever.Conexa: dev",
+        "type": "shell",
+        "command": "npm run dev",
+        "options": {
+          "cwd": "${workspaceFolder:Sever.Conexa (API)}"
+        },
+        "isBackground": true,
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated",
+          "group": "dev"
+        }
+      },
+      {
+        "label": "ErpConexa: dev",
+        "type": "shell",
+        "command": "npm run dev",
+        "options": {
+          "cwd": "${workspaceFolder:ErpConexa (Frontend)}"
+        },
+        "isBackground": true,
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated",
+          "group": "dev"
+        }
+      },
+      {
+        "label": "ServerFEpos: dev",
+        "type": "shell",
+        "command": "npm run dev",
+        "options": {
+          "cwd": "${workspaceFolder:ServerFEpos (Facturación DIAN)}"
+        },
+        "isBackground": true,
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated",
+          "group": "dev"
+        }
+      },
+      {
+        "label": "ChatBoot: dev",
+        "type": "shell",
+        "command": "npm run dev",
+        "options": {
+          "cwd": "${workspaceFolder:ChatBoot (WhatsApp)}"
+        },
+        "isBackground": true,
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated",
+          "group": "dev"
+        }
+      },
+      {
+        "label": "Dev: ERP (API + Frontend)",
+        "dependsOn": ["Sever.Conexa: dev", "ErpConexa: dev"],
+        "dependsOrder": "parallel",
+        "problemMatcher": []
+      },
+      {
+        "label": "Fin de jornada: Docker + migrar",
+        "type": "shell",
+        "command": "powershell -ExecutionPolicy Bypass -File ./Scripts/docker-up.ps1",
+        "options": {
+          "cwd": "${workspaceFolder:DevConexa}"
+        },
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "shared"
+        }
+      },
+      {
+        "label": "Dev: ERP (con Docker)",
+        "dependsOn": ["Docker: PostgreSQL", "Sever.Conexa: dev", "ErpConexa: dev"],
+        "dependsOrder": "sequence",
+        "problemMatcher": []
+      },
+      {
+        "label": "Setup: instalar dependencias",
+        "dependsOn": [
+          "Setup: Sever.Conexa",
+          "Setup: ErpConexa",
+          "Setup: ServerFEpos",
+          "Setup: ChatBoot"
+        ],
+        "dependsOrder": "parallel",
+        "problemMatcher": []
+      },
+      {
+        "label": "Setup: Sever.Conexa",
+        "type": "shell",
+        "command": "npm install",
+        "options": {
+          "cwd": "${workspaceFolder:Sever.Conexa (API)}"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Setup: ErpConexa",
+        "type": "shell",
+        "command": "npm install --ignore-scripts && npx quasar prepare",
+        "options": {
+          "cwd": "${workspaceFolder:ErpConexa (Frontend)}"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Setup: ServerFEpos",
+        "type": "shell",
+        "command": "npm install",
+        "options": {
+          "cwd": "${workspaceFolder:ServerFEpos (Facturación DIAN)}"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Setup: ChatBoot",
+        "type": "shell",
+        "command": "npm install",
+        "options": {
+          "cwd": "${workspaceFolder:ChatBoot (WhatsApp)}"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "DB: migrar Sever.Conexa",
+        "type": "shell",
+        "command": "npm run db:migrate",
+        "options": {
+          "cwd": "${workspaceFolder:Sever.Conexa (API)}"
+        },
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "shared"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 720">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0D47A1"/><stop offset=".55" stop-color="#1976D2"/><stop offset="1" stop-color="#00E5FF"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(50 100) scale(.98)">
+    <g fill="none" stroke="url(#g)" stroke-width="34" stroke-linecap="butt">
+      <path d="M176 72 A190 190 0 0 0 176 440"/><path d="M336 72 A190 190 0 0 1 336 440"/>
+    </g>
+    <g stroke="#1976D2" stroke-width="10" stroke-linecap="round">
+      <path d="M256 256 L184 160"/><path d="M256 256 L328 160"/><path d="M256 256 L160 256"/>
+      <path d="M256 256 L352 256"/><path d="M256 256 L184 352"/><path d="M256 256 L328 352"/>
+    </g>
+    <g fill="#1976D2"><circle cx="184" cy="160" r="24"/><circle cx="328" cy="160" r="24"/>
+      <circle cx="160" cy="256" r="24"/><circle cx="352" cy="256" r="24"/><circle cx="184" cy="352" r="24"/><circle cx="328" cy="352" r="24"/></g>
+    <circle cx="256" cy="256" r="44" fill="#00E5FF"/>
+    <g fill="#00E5FF">
+      <circle cx="92" cy="210" r="9"/><circle cx="116" cy="210" r="9"/><circle cx="140" cy="210" r="9"/>
+      <circle cx="92" cy="238" r="9"/><circle cx="116" cy="238" r="9"/><circle cx="140" cy="238" r="9"/>
+      <circle cx="92" cy="266" r="9"/><circle cx="116" cy="266" r="9"/><circle cx="140" cy="266" r="9"/>
+      <circle cx="92" cy="294" r="9"/><circle cx="116" cy="294" r="9"/><circle cx="140" cy="294" r="9"/>
+    </g>
+  </g>
+  <text x="600" y="390" font-family="Arial, Helvetica, sans-serif" font-size="215" font-weight="500" fill="#0D47A1">Conexa</text>
+  <text x="1390" y="390" font-family="Arial, Helvetica, sans-serif" font-size="215" font-weight="500" fill="#1976D2">Soft</text>
+  <text x="2050" y="390" font-family="Arial, Helvetica, sans-serif" font-size="82" font-weight="600" fill="#0D47A1">S.A.S</text>
+  <line x1="700" y1="505" x2="850" y2="505" stroke="#00E5FF" stroke-width="6"/>
+  <text x="875" y="530" font-family="Arial, Helvetica, sans-serif" font-size="54" fill="#526174">Gestión inteligente para empresas reales</text>
+  <line x1="1980" y1="505" x2="2130" y2="505" stroke="#00E5FF" stroke-width="6"/>
+</svg>

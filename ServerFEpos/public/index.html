@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Facturación Electrónica DIAN</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .response-section {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .response-section.show {
+            display: block;
+        }
+
+        .response-section.success {
+            background: #f0fdf4;
+            border-color: #86efac;
+        }
+
+        .response-section.error {
+            background: #fef2f2;
+            border-color: #fca5a5;
+        }
+
+        .response-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .response-icon {
+            font-size: 24px;
+        }
+
+        .response-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .response-details {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .response-item {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .response-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .response-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .response-value {
+            margin-top: 5px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .response-value.code {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-left: 10px;
+        }
+
+        .example-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .example-link:hover {
+            text-decoration: underline;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .status-badge.approved {
+            background: #86efac;
+            color: #166534;
+        }
+
+        .status-badge.rejected {
+            background: #fca5a5;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧾 Prueba de Facturación Electrónica</h1>
+            <p>Sistema de firma y envío a DIAN - Colombia</p>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <label for="xmlInput">
+                    Pega aquí el XML de tu factura electrónica (UBL 2.1):
+                    <a href="#" class="example-link" onclick="loadExample(); return false;">Cargar XML de ejemplo</a>
+                </label>
+                <textarea 
+                    id="xmlInput" 
+                    placeholder="<?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>&#10;<Invoice xmlns=&quot;urn:oasis:names:specification:ubl:schema:xsd:Invoice-2&quot;>&#10;  ...&#10;</Invoice>"
+                ></textarea>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" id="submitBtn" onclick="enviarFactura()">
+                    <span id="btnText">📤 Enviar Factura</span>
+                </button>
+                <button class="btn-secondary" onclick="limpiar()">
+                    🗑️ Limpiar
+                </button>
+            </div>
+
+            <div class="response-section" id="responseSection">
+                <div class="response-header">
+                    <span class="response-icon" id="responseIcon">✅</span>
+                    <h3 class="response-title" id="responseTitle">Respuesta del Servidor</h3>
+                </div>
+                <div class="response-details" id="responseDetails"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function enviarFactura() {
+            const xmlInput = document.getElementById('xmlInput').value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const responseSection = document.getElementById('responseSection');
+
+            if (!xmlInput) {
+                alert('⚠️ Por favor, pega un XML antes de enviar');
+                return;
+            }
+
+            // Validación básica de XML
+            if (!xmlInput.startsWith('<?xml') && !xmlInput.startsWith('<Invoice')) {
+                alert('⚠️ El contenido no parece ser un XML válido');
+                return;
+            }
+
+            // Deshabilitar botón y mostrar loading
+            submitBtn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span><span class="loading-text">Procesando...</span>';
+            responseSection.classList.remove('show', 'success', 'error');
+
+            try {
+                const response = await fetch('/factura', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/xml'
+                    },
+                    body: xmlInput
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    mostrarRespuesta(data, true);
+                } else {
+                    mostrarRespuesta(data, false);
+                }
+            } catch (error) {
+                mostrarRespuesta({
+                    error: error.message,
+                    mensaje: 'Error de conexión con el servidor'
+                }, false);
+            } finally {
+                submitBtn.disabled = false;
+                btnText.innerHTML = '📤 Enviar Factura';
+            }
+        }
+
+        function mostrarRespuesta(data, isSuccess) {
+            const responseSection = document.getElementById('responseSection');
+            const responseIcon = document.getElementById('responseIcon');
+            const responseTitle = document.getElementById('responseTitle');
+            const responseDetails = document.getElementById('responseDetails');
+
+            responseSection.classList.add('show');
+            
+            if (isSuccess && data.aprobada) {
+                responseSection.classList.add('success');
+                responseIcon.textContent = '✅';
+                responseTitle.textContent = '¡Factura Aprobada!';
+                
+                responseDetails.innerHTML = `
+                    <div class="response-item">
+                        <div class="response-label">Estado</div>
+                        <div class="response-value">
+                            <span class="status-badge approved">APROBADA</span>
+                        </div>
+                    </div>
+                    <div class="response-item">
+                        <div class="response-label">Código DIAN</div>
+                        <div class="response-value code">${data.codigo || 'N/A'}</div>
+                    </div>
+                    <div class="response-item">
+                        <div class="response-label">Mensaje</div>
+                        <div class="response-value">${data.mensaje || 'Procesado exitosamente'}</div>
+                    </div>
+                    <div class="response-item">
+                        <div class="response-label">Archivo de Respuesta</div>
+                        <div class="response-value">${data.archivo_respuesta || 'N/A'}</div>
+                    </div>
+                `;
+            } else {
+                responseSection.classList.add('error');
+                responseIcon.textContent = '❌';
+                responseTitle.textContent = data.aprobada === false ? 'Factura Rechazada' : 'Error en el Procesamiento';
+                
+                let detailsHTML = '';
+                
+                if (data.aprobada === false) {
+                    detailsHTML = `
+                        <div class="response-item">
+                            <div class="response-label">Estado</div>
+                            <div class="response-value">
+                                <span class="status-badge rejected">RECHAZADA</span>
+                            </div>
+                        </div>
+                        <div class="response-item">
+                            <div class="response-label">Código DIAN</div>
+                            <div class="response-value code">${data.codigo || 'N/A'}</div>
+                        </div>
+                        <div class="response-item">
+                            <div class="response-label">Mensaje</div>
+                            <div class="response-value">${data.mensaje || 'Sin mensaje'}</div>
+                        </div>
+                    `;
+                } else {
+                    detailsHTML = `
+                        <div class="response-item">
+                            <div class="response-label">Error</div>
+                            <div class="response-value">${data.error || data.mensaje || 'Error desconocido'}</div>
+                        </div>
+                    `;
+                }
+                
+                responseDetails.innerHTML = detailsHTML;
+            }
+
+            // Scroll suave hacia la respuesta
+            responseSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function limpiar() {
+            document.getElementById('xmlInput').value = '';
+            document.getElementById('responseSection').classList.remove('show', 'success', 'error');
+        }
+
+        function loadExample() {
+            // XML de ejemplo simple
+            const exampleXML = `<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" 
+         xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
+         xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2">
+    <ext:UBLExtensions>
+        <ext:UBLExtension>
+            <ext:ExtensionContent></ext:ExtensionContent>
+        </ext:UBLExtension>
+        <ext:UBLExtension>
+            <ext:ExtensionContent></ext:ExtensionContent>
+        </ext:UBLExtension>
+    </ext:UBLExtensions>
+    <cbc:UBLVersionID>UBL 2.1</cbc:UBLVersionID>
+    <cbc:ID>SETP990000001</cbc:ID>
+    <cbc:IssueDate>2026-01-04</cbc:IssueDate>
+    <cbc:InvoiceTypeCode>01</cbc:InvoiceTypeCode>
+    <cac:AccountingSupplierParty>
+        <cac:Party>
+            <cac:PartyName>
+                <cbc:Name>EMPRESA DE EJEMPLO S.A.S.</cbc:Name>
+            </cac:PartyName>
+        </cac:Party>
+    </cac:AccountingSupplierParty>
+    <cac:LegalMonetaryTotal>
+        <cbc:PayableAmount currencyID="COP">100000</cbc:PayableAmount>
+    </cac:LegalMonetaryTotal>
+</Invoice>`;
+            
+            document.getElementById('xmlInput').value = exampleXML;
+            alert('📄 XML de ejemplo cargado. Recuerda que necesitas un XML válido según UBL 2.1 de la DIAN para producción.');
+        }
+
+        // Auto-focus en el textarea
+        document.getElementById('xmlInput').focus();
+    </script>
+</body>
+</html>

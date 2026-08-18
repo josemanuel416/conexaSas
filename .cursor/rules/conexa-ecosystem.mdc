@@ -1,0 +1,51 @@
+---
+description: Contexto del ecosistema DevConexa y convenciones entre proyectos
+alwaysApply: true
+---
+
+# Ecosistema DevConexa
+
+Monorepo con 5 proyectos relacionados. Abrir `DevConexa.code-workspace` para trabajar con todos.
+
+## Proyectos y puertos
+
+| Proyecto | Stack | Puerto |
+|----------|-------|--------|
+| ErpConexa | Quasar/Vue 3 | 9500 |
+| Sever.Conexa | Express + PostgreSQL | 3500 |
+| ServerFEpos | Express (facturación DIAN) | 3000 |
+| ChatBoot | Express + WhatsApp Meta API | 3001 (dev) |
+| Scripts | SQL + docs | — |
+
+## Dependencias entre servicios
+
+- ErpConexa → Sever.Conexa (`VITE_API_URL=http://localhost:3500`)
+- Sever.Conexa → PostgreSQL (`DATABASE_URL`, DB `Conexa`)
+- ChatBoot → PostgreSQL + ServerFEpos (facturas)
+- ServerFEpos → certificado DIAN (.p12 en `cert/`)
+
+## Modelo multi-compañía
+
+- Tenant aislado por `company_id`
+- `super_admin` (company_id NULL) → panel `/admin`
+- Usuarios de compañía → `/login`, `/dashboard`
+
+## Comandos útiles
+
+```powershell
+.\Scripts\setup.ps1              # setup inicial (PostgreSQL local)
+.\Scripts\dev.ps1 -Profile erp   # desarrollo diario (sin Docker)
+.\Scripts\docker-up.ps1          # fin de jornada: Docker + migrar
+.\Scripts\docker-down.ps1        # apagar Docker al terminar
+cd Sever.Conexa; npm run db:migrate
+```
+
+## Convenciones
+
+- **Desarrollo diario:** PostgreSQL local + Node directo (no Docker)
+- **Fin de jornada:** Docker solo para PostgreSQL y pruebas integradas
+
+- Node.js >= 18 en todos los proyectos
+- `.env` nunca se versiona; usar `.env.example`
+- Migraciones SQL de referencia en `Scripts/database/`
+- Nombre de carpeta API: `Sever.Conexa` (typo histórico, no renombrar sin acuerdo)

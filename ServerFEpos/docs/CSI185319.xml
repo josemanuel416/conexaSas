@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sts="dian:gov:co:facturaelectronica:Structures-2-1" xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" xmlns:xades141="http://uri.etsi.org/01903/v1.4.1#" xsi:schemaLocation="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2     http://docs.oasis-open.org/ubl/os-UBL-2.1/xsd/maindoc/UBL-Invoice-2.1.xsd" xmlns:salud="minSalud:gov:co:facturaelectronica:Structures-2-1">
+  <ext:UBLExtensions>
+    <ext:UBLExtension>
+      <ext:ExtensionContent>
+        <sts:DianExtensions>
+          <sts:InvoiceControl>
+            <sts:InvoiceAuthorization>18764108063070</sts:InvoiceAuthorization>
+            <sts:AuthorizationPeriod>
+              <cbc:StartDate>2026-04-06</cbc:StartDate>
+              <cbc:EndDate>2027-04-06</cbc:EndDate>
+            </sts:AuthorizationPeriod>
+            <sts:AuthorizedInvoices>
+              <sts:Prefix>CSI</sts:Prefix>
+              <sts:From>185256</sts:From>
+              <sts:To>500000</sts:To>
+            </sts:AuthorizedInvoices>
+          </sts:InvoiceControl>
+          <sts:InvoiceSource>
+            <cbc:IdentificationCode listAgencyID="6" listAgencyName="United Nations Economic Commission for Europe" listSchemeURI="urn:oasis:names:specification:ubl:codelist:gc:CountryIdentificationCode-2.1">CO</cbc:IdentificationCode>
+          </sts:InvoiceSource>
+          <sts:SoftwareProvider>
+            <sts:ProviderID schemeAgencyID="195" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)" schemeID="4" schemeName="31">901336751</sts:ProviderID>
+            <sts:SoftwareID schemeAgencyID="195" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)">200dbcfe-793d-42da-a1bd-4ab456a88eff</sts:SoftwareID>
+          </sts:SoftwareProvider>
+          <sts:SoftwareSecurityCode schemeAgencyID="195" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)">5f3022adc4f71d875dc40e2e2c841a8bc6f61fc5c5815dd720738099a63685b45091df39c42aae457d6a1e7e81cf9fa5</sts:SoftwareSecurityCode>
+          <sts:AuthorizationProvider>
+            <sts:AuthorizationProviderID schemeID="4" schemeName="31" schemeAgencyID="195" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)">800197268</sts:AuthorizationProviderID>
+          </sts:AuthorizationProvider>
+          <sts:QRCode>
+						NroFactura=CSI185319, NitFacturador=901336751, NitAdquiriente=901543211, FechaFactura=2026-04-08, ValorTotalFactura=2000000.00
+					</sts:QRCode>
+        </sts:DianExtensions>
+      </ext:ExtensionContent>
+    </ext:UBLExtension>
+    <ext:UBLExtension>
+      <ext:ExtensionContent><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="xmldsig-ab2df1fb-1819-413d-8b8c-79e9ed75638a"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /><ds:Reference Id="xmldsig-ab2df1fb-1819-413d-8b8c-79e9ed75638a-ref0" URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>ARAn8dz4aJ7jFjVEAT5vw7Sk9DWbVhVLY/jKmYvmdLs=</ds:DigestValue></ds:Reference><ds:Reference Id="xmldsig-ab2df1fb-1819-413d-8b8c-79e9ed75638a-ref1" URI="#KeyInfo"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>cgqMRqR6qihyQUg4e7+hkG7xW4Uv01omwYwzDU88CUc=</ds:DigestValue></ds:Reference><ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#xmldsig-ab2df1fb-1819-413d-8b8c-79e9ed75638a-signedprops"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>YlTGw9cFSsjcvdvRo/6ujGjCiqKlHV+QchVRGPcJEtU=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue Id="xmldsig-ab2df1fb-1819-413d-8b8c-79e9ed75638a-sigvalue">EJQrIYDJRBTxr510YSa464OeQKjkJ327uDrHASe2/LPT7OQbCXLTmEhyfX5IGvHmVDccbhS5tnkugjZr4z+tRdWOevVwlLgRdvQ+d1iDhXIhDdsl0LvQs7v9JdXHwMQlAyqHMMlPWAppOwXRshoOq9BWYyxsOpswuyajmMQ9oMVU+s07Cyx8ZjyJoHm+a1jK7xy5mGx0IpvGBhrXoe24JONVLSqQYCAqX1N52vjq2RqK8UOK2np5DKqr7AXefIVvG1Zht7XT/DpOPlVXkd7nAb4FHpB+WH6HtsJQw9xs79FvszHe7bwp6ydwn2wNzKj6gcsvzPw3EYgyO2Lp4DFp+A==</ds:SignatureValue><ds:KeyInfo Id="KeyInfo"><ds:X509Data><ds:X509Certificate>MIIJRTCCBy2gAwIBAgIQfVtE6tWG0bxnO7MzrbhKPzANBgkqhkiG9w0BAQsFADCBrTEcMBoGA1UECQwTd3d3LmNlcnRpY2FtYXJhLmNvbTEPMA0GA1UEBwwGQk9HT1RBMRkwFwYDVQQIDBBESVNUUklUTyBDQVBJVEFMMQswCQYDVQQGEwJDTzEYMBYGA1UECwwPTklUIDgzMDA4NDQzMy03MRgwFgYDVQQKDA9DRVJUSUNBTUFSQSBTLkExIDAeBgNVBAMMF0FDIFNVQiA0MDk2IENFUlRJQ0FNQVJBMCAXDTI0MTExODIxMzU0N1oYDzIwMjYxMTE4MjEzNTQ3WjCCATYxFDASBgNVBAQMC0dPTUVaIEJBQ0NJMSUwIwYDVQQJDBxDTCAxMSBBIDE1IDU1ICAgIEJBUlJJTyBaT05BMRMwEQYDVQQIDApMQSBHVUFKSVJBMSAwHgYDVQQLDBdGQUNUVVJBQ0lPTiBFTEVDVFJPTklDQTEQMA4GA1UEBRMHMjI2MDUxODEaMBgGCisGAQQBgbVjAgMTCjkwMTMzNjc1MTQxGjAYBgorBgEEAYG1YwICEwoxMDY1ODI1NDcwMSIwIAYDVQQKDBlDTElOSVZJREEgWSBTQUxVRCBJUFMgU0FTMREwDwYDVQQHDAhSSU9IQUNIQTEOMAwGA1UEKgwFSlVMSU8xCzAJBgNVBAYTAkNPMSIwIAYDVQQDDBlDTElOSVZJREEgWSBTQUxVRCBJUFMgU0FTMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5LDeo0dc3v1uE4h4kejzb9vYtleCPQ1hjWsc+0klqAkqTvHPk2suND3oS9i8uCckId+f4NaxHfCBswD12+ZxFkvJcwnygnqXY235cchqeB18/qqG40xXZ0pfm35M6lcXcZX+Ott7C9wocnIs4zd3u84JbW9EWNDHUtxupuMpe/YS7F0F3Y0erem0olgbkC2R6jlE1KHgnL076hi33gWnnbXcdrnVssgedBCgi79WEpqb48EMSSRX5xo3OR8ECmZ2hYtIKbJLrbVxSfPpfiYwbXkk1ZMisE/r9M8cqXRdzFpfq0scur6R5vkAfcDvueQhsPUqurAPUnWTZIFMdQ+npQIDCgCxo4ID0TCCA80wOgYIKwYBBQUHAQEELjAsMCoGCCsGAQUFBzABhh5odHRwOi8vb2NzcDQwOTYuY2VydGljYW1hcmEuY28wJAYDVR0RBB0wG4EZU0lTVEVNQVNAQ0xJTklWSURBSVBTLkNPTTCCAQsGA1UdIASCAQIwgf8wgZkGCysGAQQBgbVjMgECMIGJMCsGCCsGAQUFBwIBFh9odHRwOi8vd3d3LmNlcnRpY2FtYXJhLmNvbS9kcGMvMFoGCCsGAQUFBwICME4aTExpbWl0YWNpb25lcyBkZSBnYXJhbnTtYXMgZGUgZXN0ZSBjZXJ0aWZpY2FkbyBzZSBwdWVkZW4gZW5jb250cmFyIGVuIGxhIERQQy4wYQYLKwYBBAGBtWMKCgEwUjBQBggrBgEFBQcCAjBEGkJEaXNwb3NpdGl2byBkZSBoYXJkd2FyZSAoVG9rZW4pIEPzZGlnbyBkZSBhY3JlZGl0YWNp8246IDE2LUVDRC0wMDIwDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCA/gwJwYDVR0lBCAwHgYIKwYBBQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDATAdBgNVHQ4EFgQUvqUjAn3LaT1QUfAfqaD0ImtwB8QwHwYDVR0jBBgwFoAUZhmj9ZswsAxOTRmZYEIJ0loxSocwggHRBgNVHR8EggHIMIIBxDCB9aCB8qCB74Z0aHR0cDovL3d3dy5jZXJ0aWNhbWFyYS5jb20vcmVwb3NpdG9yaW9yZXZvY2FjaW9uZXMvYWNfc3Vib3JkaW5hZGFfY2VydGljYW1hcmFfY29uX2V4dGVuc2lvbl9jcml0aWNhXzQwOTYuY3JsP2NybD1jcmyGd2h0dHA6Ly9taXJyb3IuY2VydGljYW1hcmEuY29tL3JlcG9zaXRvcmlvcmV2b2NhY2lvbmVzL2FjX3N1Ym9yZGluYWRhX2NlcnRpY2FtYXJhX2Nvbl9leHRlbnNpb25fY3JpdGljYV80MDk2LmNybD9jcmw9Y3JsMIHJoIHGoIHDhl5odHRwOi8vd3d3LmNlcnRpY2FtYXJhLmNvbS9yZXBvc2l0b3Jpb3Jldm9jYWNpb25lcy9hY19zdWJvcmRpbmFkYV9jZXJ0aWNhbWFyYV80MDk2LmNybD9jcmw9Y3JshmFodHRwOi8vbWlycm9yLmNlcnRpY2FtYXJhLmNvbS9yZXBvc2l0b3Jpb3Jldm9jYWNpb25lcy9hY19zdWJvcmRpbmFkYV9jZXJ0aWNhbWFyYV80MDk2LmNybD9jcmw9Y3JsMA0GCSqGSIb3DQEBCwUAA4ICAQAsgh3PlB6pTbjKtf+ARPo5wnvyTYTxB2E+ERqzO7Hll6l+IukiYgEEfjsbchr5N1Ed7VdzjFVuWqHo+JYmo4IYUzQrX4F3I285Ux6f0xcFzu/2EHpfzP0fuZ5ID6gAP5ktcXSOQ+gI1K2F92Y6TqTpuVpz8BsaIE5I9QjYXN1LfRBKsU/2Xs2L/Kt1hXOQ8j6O/IjcdZRtGLKISKGIy6GyTKJ+RwvTZwLHhFh1jQKuvxMQ04Jq9gNTWUVClCm7H9OwCs/SEnB2CKyYw8mkgh27A1fd/t9gFpdO7yg4PznibXnIz6qB5d0CN7i1r0gFhOXDBrQteXLpS5h9FYq4WJiVuY8WKVtSRLjUuROiCPKqwXjZfPvExrq7csj8aNjkReANpknqnx55VHpzoxM3FlOelggxEzwc3r5Py5TE4vK2b1cIUhalMa/UfF1waymawczhlGtMA4JQaV0Grxr2r2ZlxmThCKjwL2hidKhe0mIDDvNd03KwKeWLX3cPn7+cH9q60eUn87GhUohpJtmi8HgoAXAcXpXZnOz9K4N04gfOvmB8TBPo7kie2hZKmYpNcZM/TDoScODZCj5EfD61nD5BuWsGij5urgHssiQgqdwdTZKvIx+Uafh0pgtm23NTyhpNPEdBcXCDyviS4ry9WrXUlUwqO0013X2bRAM4nCOKAw==</ds:X509Certificate></ds:X509Data></ds:KeyInfo><ds:Object><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" xmlns:xades141="http://uri.etsi.org/01903/v1.4.1#" Target="#xmldsig-ab2df1fb-1819-413d-8b8c-79e9ed75638a"><xades:SignedProperties Id="xmldsig-ab2df1fb-1819-413d-8b8c-79e9ed75638a-signedprops"><xades:SignedSignatureProperties><xades:SigningTime>2026-04-08T10:26:53.524-05:00</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>wEBUwBv/rzLZjSafcST+IodABnnDxguFFQJgEFJBcS0=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>CN=AC SUB CERTICAMARA,O=CERTICAMARA S.A,OU=NIT 830084433-7,C=CO,ST=DISTRITO CAPITAL,L=BOGOTA,STREET=www.certicamara.com</ds:X509IssuerName><ds:X509SerialNumber>166627396296567523680412384808480033343</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><xades:SignaturePolicyIdentifier><xades:SignaturePolicyId><xades:SigPolicyId><xades:Identifier>https://facturaelectronica.dian.gov.co/politicadefirma/v2/politicadefirmav2.pdf</xades:Identifier></xades:SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>dMoMvtcG5aIzgYo0tIsSQeVJBDnUnfSOfBpxXrmor0Y=</ds:DigestValue></xades:SigPolicyHash></xades:SignaturePolicyId></xades:SignaturePolicyIdentifier><xades:SignerRole><xades:ClaimedRoles><xades:ClaimedRole>supplier</xades:ClaimedRole></xades:ClaimedRoles></xades:SignerRole></xades:SignedSignatureProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></ext:ExtensionContent>
+    </ext:UBLExtension>
+    <ext:UBLExtension>
+      <ext:ExtensionContent>
+        <CustomTagGeneral>
+          <Name>Responsable</Name>
+          <Value>www.minsalud.gov.co</Value>
+          <Interoperabilidad>
+            <Group schemeName="Sector Salud">
+              <Collection schemeName="Usuario">
+                <AdditionalInformation>
+                  <Name>CODIGO_PRESTADOR</Name>
+                  <Value>4400101132</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>TIPO_DOCUMENTO_IDENTIFICACION</Name>
+                  <Value schemeName="salud_identificación.gc" schemeID="TI">Tarjeta de Identidad</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>NUMERO_DOCUMENTO_IDENTIFICACION</Name>
+                  <Value>1127659551</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>PRIMER_APELLIDO</Name>
+                  <Value>ALVARADO</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>SEGUNDO_APELLIDO</Name>
+                  <Value>ESTRADA</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>PRIMER_NOMBRE</Name>
+                  <Value>VALENTINA</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>SEGUNDO_NOMBRE</Name>
+                  <Value>MARIA</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>TIPO_USUARIO</Name>
+                  <Value schemeName="salud_tipo_usuario.gc" schemeID="04">Subsidiado</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>MODALIDAD_PAGO</Name>
+                  <Value schemeName="salud_modalidad_pago.gc" schemeID="04">Pago por evento.</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>NUMERO_AUTORIZACION</Name>
+                  <Value>3248545</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>NUMERO_MIPRES</Name>
+                  <Value></Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>COBERTURA_PLAN_BENEFICIOS</Name>
+                  <Value schemeName="salud_cobertura.gc" schemeID="01">Plan de beneficios en salud financiado con UPC</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>NUMERO_CONTRATO</Name>
+                  <Value>11179</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>NUMERO_POLIZA</Name>
+                  <Value></Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>PAGOS_COMPARTIDOS</Name>
+                  <Value>0.00</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>COPAGO</Name>
+                  <Value>0.00</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>CUOTA_MODERADORA</Name>
+                  <Value>0.00</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>CUOTA_RECUPERACION</Name>
+                  <Value>0.00</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>ELABORADO_POR</Name>
+                  <Value>HARVEY  ALFONSO BAQUERO  VEGA</Value>
+                </AdditionalInformation>
+              </Collection>
+            </Group>
+          </Interoperabilidad>
+        </CustomTagGeneral>
+      </ext:ExtensionContent>
+    </ext:UBLExtension>
+  </ext:UBLExtensions>
+  <cbc:UBLVersionID>UBL 2.1</cbc:UBLVersionID>
+  <cbc:CustomizationID>SS-CUFE</cbc:CustomizationID>
+  <cbc:ProfileID>DIAN 2.1: Factura Electrónica de Venta</cbc:ProfileID>
+  <cbc:ProfileExecutionID>1</cbc:ProfileExecutionID>
+  <cbc:ID>CSI185319</cbc:ID>
+  <cbc:UUID schemeID="1" schemeName="CUFE-SHA384">48abcb69601520bbcdab5853a8a53803bafebe5077b7bd6f225e7a75ae6d16b41a1118799673d55e62a6747a103b3c38</cbc:UUID>
+  <cbc:IssueDate>2026-04-08</cbc:IssueDate>
+  <cbc:IssueTime>00:00:00-05:00</cbc:IssueTime>
+  <cbc:DueDate>2026-05-08</cbc:DueDate>
+  <cbc:InvoiceTypeCode>01</cbc:InvoiceTypeCode>
+  <cbc:Note>CSI1853192026-04-0800:00:00-05:002000000.00010.00040.00030.002000000.00901336751901543211b58ba2c85e49f826865a61829326ac3b99734956f275dd72a1b6b354c7b6230c1 - CSI1853192026-04-0800:00:00-05:002000000.00010.00040.00030.002000000.00901336751901543211b58ba2c85e49f826865a61829326ac3b99734956f275dd72a1b6b354c7b6230c1</cbc:Note>
+  <cbc:TaxPointDate>2026-05-08</cbc:TaxPointDate>
+  <cbc:DocumentCurrencyCode>COP</cbc:DocumentCurrencyCode>
+  <cbc:LineCountNumeric>1</cbc:LineCountNumeric>
+  <cac:InvoicePeriod>
+    <cbc:StartDate>2026-03-15</cbc:StartDate>
+    <cbc:StartTime>00:00:00-05:00</cbc:StartTime>
+    <cbc:EndDate>2026-03-16</cbc:EndDate>
+    <cbc:EndTime>23:59:59-05:00</cbc:EndTime>
+  </cac:InvoicePeriod>
+  <cac:AccountingSupplierParty>
+    <cbc:AdditionalAccountID schemeAgencyID="195">1</cbc:AdditionalAccountID>
+    <cac:Party>
+      <cac:PartyName>
+        <cbc:Name>CLINIVIDA Y SALUD IPS SAS</cbc:Name>
+      </cac:PartyName>
+      <cac:PhysicalLocation>
+        <cac:Address>
+          <cbc:ID>44001</cbc:ID>
+          <cbc:CityName>RIOHACHA</cbc:CityName>
+          <cbc:CountrySubentity>La Guajira</cbc:CountrySubentity>
+          <cbc:CountrySubentityCode>44</cbc:CountrySubentityCode>
+          <cac:AddressLine>
+            <cbc:Line>CALLE 11 A 15 55</cbc:Line>
+          </cac:AddressLine>
+          <cac:Country>
+            <cbc:IdentificationCode>CO</cbc:IdentificationCode>
+            <cbc:Name languageID="es">Colombia</cbc:Name>
+          </cac:Country>
+        </cac:Address>
+      </cac:PhysicalLocation>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>CLINIVIDA Y SALUD IPS SAS</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="4" schemeName="31" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)" schemeAgencyID="195">901336751</cbc:CompanyID>
+        <cbc:TaxLevelCode listName="48">R-99-PN</cbc:TaxLevelCode>
+        <cac:RegistrationAddress>
+          <cbc:ID>44001</cbc:ID>
+          <cbc:CityName>RIOHACHA</cbc:CityName>
+          <cbc:CountrySubentity>La Guajira</cbc:CountrySubentity>
+          <cbc:CountrySubentityCode>44</cbc:CountrySubentityCode>
+          <cac:AddressLine>
+            <cbc:Line>CALLE 11 A 15 55</cbc:Line>
+          </cac:AddressLine>
+          <cac:Country>
+            <cbc:IdentificationCode>CO</cbc:IdentificationCode>
+            <cbc:Name languageID="es">Colombia</cbc:Name>
+          </cac:Country>
+        </cac:RegistrationAddress>
+        <cac:TaxScheme>
+          <cbc:ID>01</cbc:ID>
+          <cbc:Name>IVA</cbc:Name>
+        </cac:TaxScheme>
+      </cac:PartyTaxScheme>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName>CLINIVIDA Y SALUD IPS SAS</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="4" schemeName="31" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)" schemeAgencyID="195">901336751</cbc:CompanyID>
+        <cac:CorporateRegistrationScheme>
+          <cbc:ID>CSI</cbc:ID>
+          <cbc:Name>CLINIVIDA Y SALUD IPS SAS</cbc:Name>
+        </cac:CorporateRegistrationScheme>
+      </cac:PartyLegalEntity>
+      <cac:Contact>
+        <cbc:Name>ANNYS CATALINA BRITO MEZA</cbc:Name>
+        <cbc:Telephone>3243329216</cbc:Telephone>
+        <cbc:Telefax></cbc:Telefax>
+        <cbc:ElectronicMail>COORDFACTURACIONCLINIVIDAIPS@GMAIL.COM</cbc:ElectronicMail>
+      </cac:Contact>
+    </cac:Party>
+  </cac:AccountingSupplierParty>
+  <cac:AccountingCustomerParty>
+    <cbc:AdditionalAccountID>1</cbc:AdditionalAccountID>
+    <cac:Party>
+      <cac:PartyName>
+        <cbc:Name>PROTEGER EPS S.A.S</cbc:Name>
+      </cac:PartyName>
+      <cac:PhysicalLocation>
+        <cac:Address>
+          <cbc:ID>08001</cbc:ID>
+          <cbc:CityName>BARRANQUILLA Distrito</cbc:CityName>
+          <cbc:CountrySubentity>Atléntico</cbc:CountrySubentity>
+          <cbc:CountrySubentityCode>08</cbc:CountrySubentityCode>
+          <cac:AddressLine>
+            <cbc:Line>CL 44 46 16</cbc:Line>
+          </cac:AddressLine>
+          <cac:Country>
+            <cbc:IdentificationCode>CO</cbc:IdentificationCode>
+            <cbc:Name languageID="es">Colombia</cbc:Name>
+          </cac:Country>
+        </cac:Address>
+      </cac:PhysicalLocation>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>PROTEGER EPS S.A.S</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="6" schemeName="31" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)" schemeAgencyID="195">901543211</cbc:CompanyID>
+        <cbc:TaxLevelCode listName="48">R-99-PN</cbc:TaxLevelCode>
+        <cac:RegistrationAddress>
+          <cbc:ID>08001</cbc:ID>
+          <cbc:CityName>BARRANQUILLA Distrito</cbc:CityName>
+          <cbc:CountrySubentity>Atléntico</cbc:CountrySubentity>
+          <cbc:CountrySubentityCode>08</cbc:CountrySubentityCode>
+          <cac:AddressLine>
+            <cbc:Line>CL 44 46 16</cbc:Line>
+          </cac:AddressLine>
+          <cac:Country>
+            <cbc:IdentificationCode>CO</cbc:IdentificationCode>
+            <cbc:Name languageID="es">Colombia</cbc:Name>
+          </cac:Country>
+        </cac:RegistrationAddress>
+        <cac:TaxScheme>
+          <cbc:ID>01</cbc:ID>
+          <cbc:Name>IVA</cbc:Name>
+        </cac:TaxScheme>
+      </cac:PartyTaxScheme>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName>PROTEGER EPS S.A.S</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="6" schemeName="31" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)" schemeAgencyID="195">901543211</cbc:CompanyID>
+        <cac:CorporateRegistrationScheme>
+          <cbc:Name>PROTEGER EPS S.A.S</cbc:Name>
+        </cac:CorporateRegistrationScheme>
+      </cac:PartyLegalEntity>
+      <cac:Contact>
+        <cbc:Name>PROTEGER EPS S.A.S</cbc:Name>
+        <cbc:Telephone>3173721910</cbc:Telephone>
+        <cbc:Telefax></cbc:Telefax>
+        <cbc:ElectronicMail>notifica.judicial@cajacopieps.com</cbc:ElectronicMail>
+      </cac:Contact>
+    </cac:Party>
+  </cac:AccountingCustomerParty>
+  <cac:PaymentMeans>
+    <cbc:ID schemeName="salud_modalidades_pago.gc" schemeID="04">2</cbc:ID>
+    <cbc:PaymentMeansCode>47</cbc:PaymentMeansCode>
+    <cbc:PaymentDueDate>2026-05-08</cbc:PaymentDueDate>
+    <cbc:PaymentID>0100186368</cbc:PaymentID>
+  </cac:PaymentMeans>
+  <cac:LegalMonetaryTotal>
+    <cbc:LineExtensionAmount currencyID="COP">2000000.00</cbc:LineExtensionAmount>
+    <cbc:TaxExclusiveAmount currencyID="COP">0.00</cbc:TaxExclusiveAmount>
+    <cbc:TaxInclusiveAmount currencyID="COP">2000000.00</cbc:TaxInclusiveAmount>
+    <cbc:AllowanceTotalAmount currencyID="COP">0.00</cbc:AllowanceTotalAmount>
+    <cbc:ChargeTotalAmount currencyID="COP">0.00</cbc:ChargeTotalAmount>
+    <cbc:PrepaidAmount currencyID="COP">0.00</cbc:PrepaidAmount>
+    <cbc:PayableAmount currencyID="COP">2000000.00</cbc:PayableAmount>
+  </cac:LegalMonetaryTotal>
+  <cac:InvoiceLine>
+    <cbc:ID>1</cbc:ID>
+    <cbc:InvoicedQuantity unitCode="NIU">1</cbc:InvoicedQuantity>
+    <cbc:LineExtensionAmount currencyID="COP">2000000.0000</cbc:LineExtensionAmount>
+    <cbc:FreeOfChargeIndicator>false</cbc:FreeOfChargeIndicator>
+    <cac:Item>
+      <cbc:Description>APENDICECTOMIA VIA ABIERTA</cbc:Description>
+      <cac:SellersItemIdentification>
+        <cbc:ID>PQ471102</cbc:ID>
+      </cac:SellersItemIdentification>
+      <cac:StandardItemIdentification>
+        <cbc:ID schemeID="001" schemeName="UNSPSC" schemeAgencyID="10">PQ471102</cbc:ID>
+      </cac:StandardItemIdentification>
+    </cac:Item>
+    <cac:Price>
+      <cbc:PriceAmount currencyID="COP">2000000.0000</cbc:PriceAmount>
+      <cbc:BaseQuantity unitCode="NIU">1.00</cbc:BaseQuantity>
+    </cac:Price>
+  </cac:InvoiceLine>
+</Invoice>

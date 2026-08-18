@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sts="dian:gov:co:facturaelectronica:Structures-2-1" xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" xmlns:xades141="http://uri.etsi.org/01903/v1.4.1#" xsi:schemaLocation="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2     http://docs.oasis-open.org/ubl/os-UBL-2.1/xsd/maindoc/UBL-Invoice-2.1.xsd" xmlns:salud="minSalud:gov:co:facturaelectronica:Structures-2-1">
+  <ext:UBLExtensions>
+    <ext:UBLExtension>
+      <ext:ExtensionContent>
+        <sts:DianExtensions>
+          <sts:InvoiceControl>
+            <sts:InvoiceAuthorization>18764074136346</sts:InvoiceAuthorization>
+            <sts:AuthorizationPeriod>
+              <cbc:StartDate>2024-07-02</cbc:StartDate>
+              <cbc:EndDate>2026-07-02</cbc:EndDate>
+            </sts:AuthorizationPeriod>
+            <sts:AuthorizedInvoices>
+              <sts:Prefix>SMSG</sts:Prefix>
+              <sts:From>1</sts:From>
+              <sts:To>400000</sts:To>
+            </sts:AuthorizedInvoices>
+          </sts:InvoiceControl>
+          <sts:InvoiceSource>
+            <cbc:IdentificationCode listAgencyID="6" listAgencyName="United Nations Economic Commission for Europe" listSchemeURI="urn:oasis:names:specification:ubl:codelist:gc:CountryIdentificationCode-2.1">CO</cbc:IdentificationCode>
+          </sts:InvoiceSource>
+          <sts:SoftwareProvider>
+            <sts:ProviderID schemeAgencyID="195" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)" schemeID="1" schemeName="31">900345765</sts:ProviderID>
+            <sts:SoftwareID schemeAgencyID="195" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)">6b098f86-bf57-4451-9514-5c93ef5e9f51</sts:SoftwareID>
+          </sts:SoftwareProvider>
+          <sts:SoftwareSecurityCode schemeAgencyID="195" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)">8932cc0e239d0f3a4dbce8b157831adde829f8b41de02e1b3508c69a42697a9e7c3a9190e433f58cd722a94c91d9b423</sts:SoftwareSecurityCode>
+          <sts:AuthorizationProvider>
+            <sts:AuthorizationProviderID schemeID="4" schemeName="31" schemeAgencyID="195" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)">800197268</sts:AuthorizationProviderID>
+          </sts:AuthorizationProvider>
+          <sts:QRCode>
+						NroFactura=SMSG111456, NitFacturador=900345765, NitAdquiriente=830003564, FechaFactura=2026-01-04, ValorTotalFactura=65700.00
+					</sts:QRCode>
+        </sts:DianExtensions>
+      </ext:ExtensionContent>
+    </ext:UBLExtension>
+    <ext:UBLExtension>
+      <ext:ExtensionContent><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="xmldsig-ab2df1fb-1819-413d-8b8c-79e9ed75638a"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /><ds:Reference Id="xmldsig-ab2df1fb-1819-413d-8b8c-79e9ed75638a-ref0" URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>zk+/6jhoHJVgAh3b1pKxOBWPQwLR3D0Lgb3vFy3bJtE=</ds:DigestValue></ds:Reference><ds:Reference Id="xmldsig-ab2df1fb-1819-413d-8b8c-79e9ed75638a-ref1" URI="#KeyInfo"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>WNfZ3YwAeZDNl/zk5tGZg9e4cyy98hpGNApGUpgwQhU=</ds:DigestValue></ds:Reference><ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#xmldsig-ab2df1fb-1819-413d-8b8c-79e9ed75638a-signedprops"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>zKy5b5k8VCWPYNQLVAL+lLFvY8+reNjeE5bOb+p3dUI=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue Id="xmldsig-ab2df1fb-1819-413d-8b8c-79e9ed75638a-sigvalue">Hz8hm5D0a/P/qOyBbdYe2g18K/7lIrV5O3muBCXAL12ZBTwuufygPCqDakUfuzk02rRanWbXW3+QnkF08n964wcee8F/CC9yQMu9qGSrrZDCHL4clGrnNCUW1kOYGZEdP2tFuJ+tVNqH9Vyu/9gZE1u3j68Ban7djO5R78PkBI0ULJRNYmhr6Kjxi1//kpfpS0hx9ylqgvvuqF5D/XcLJ4U5pcbP5t3tpuY+EzMcffhEUrmeGqdQS3hDzxctBd7Fzg37Q5r1URuPFTAp3yh94TJQvohDeFSA4ahDVUXHzakMQJ/9cZwvp1x4YmfgZi9fJfWF7lMj+lB9eBJ0psCopA==</ds:SignatureValue><ds:KeyInfo Id="KeyInfo"><ds:X509Data><ds:X509Certificate>MIIJkzCCB3ugAwIBAgIQAqf42THmTHFnpTqYA0xXIDANBgkqhkiG9w0BAQsFADCBrTEcMBoGA1UECQwTd3d3LmNlcnRpY2FtYXJhLmNvbTEPMA0GA1UEBwwGQk9HT1RBMRkwFwYDVQQIDBBESVNUUklUTyBDQVBJVEFMMQswCQYDVQQGEwJDTzEYMBYGA1UECwwPTklUIDgzMDA4NDQzMy03MRgwFgYDVQQKDA9DRVJUSUNBTUFSQSBTLkExIDAeBgNVBAMMF0FDIFNVQiA0MDk2IENFUlRJQ0FNQVJBMCAXDTI1MDIwNjIyNDEyOFoYDzIwMjYwMjA2MjI0MTI4WjCCAW8xGjAYBgNVBAQMEUJBUVVFUk8gR1VUSUVSUkVaMSwwKgYDVQQJDCNDQUxMRSA5QSAxNyA1MyAgIEJBUlJJTyBTQU4gSk9BUVVJTjEOMAwGA1UECAwFQ0VTQVIxIDAeBgNVBAsMF0ZBQ1RVUkFDSU9OIEVMRUNUUk9OSUNBMRAwDgYDVQQFEwcyMjc4OTU2MRowGAYKKwYBBAGBtWMCAxMKOTAwMzQ1NzY1MTEYMBYGCisGAQQBgbVjAgITCDQ5NzgwMzUyMTowOAYDVQQKDDFFTVBSRVNBIE1VTFRJQUNUSVZBIERFIFNBTFVEIFNFUk1VTFRJU0FMVUQgUy5BLlMuMRMwEQYDVQQHDApWQUxMRURVUEFSMQ8wDQYDVQQqDAZDQVJNRU4xCzAJBgNVBAYTAkNPMTowOAYDVQQDDDFFTVBSRVNBIE1VTFRJQUNUSVZBIERFIFNBTFVEIFNFUk1VTFRJU0FMVUQgUy5BLlMuMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAi/bdkC475+lAtzaQwRuBP09FNVQcR6sBBjPpOCebPOzH0Kh88lq94K2xyY+dICxN3v8A8AKTKR4V8o2crsm3bC1Qq4X8Xn7cUVbZ7NiTvaTYBlyISeILJTD8/q1yFQWzuWDIe7e1sdTHfZ96wuZLMxXHjr/i/lBEoFfnNvmv5/Y9r3erV49TazitY4LsewCxR1muz4Prc1ucOkKuwnO20I+8Sw2aFyJ3WVJjHGt1YO0oESK/97tmFCVGJXihFW+Edihge3OqUI5JrCDnDTDMbbbc77Eq60x/i3wSvHn27zaj66ZinAM0K97iRxaPP0vIfTo8WP/mJyTSNt7RHCMQmwIDCgCxo4ID5jCCA+IwOgYIKwYBBQUHAQEELjAsMCoGCCsGAQUFBzABhh5odHRwOi8vb2NzcDQwOTYuY2VydGljYW1hcmEuY28wNwYDVR0RBDAwLoEsQ09OVEFCSUxJREFEQFNFUk1VTFRJU0FMVURDTElOSUNBQ09EQVpaSS5DT00wggENBgNVHSAEggEEMIIBADCBmgYMKwYBBAGBtWMyAQgEMIGJMCsGCCsGAQUFBwIBFh9odHRwOi8vd3d3LmNlcnRpY2FtYXJhLmNvbS9kcGMvMFoGCCsGAQUFBwICME4aTExpbWl0YWNpb25lcyBkZSBnYXJhbnTtYXMgZGUgZXN0ZSBjZXJ0aWZpY2FkbyBzZSBwdWVkZW4gZW5jb250cmFyIGVuIGxhIERQQy4wYQYLKwYBBAGBtWMKCgEwUjBQBggrBgEFBQcCAjBEGkJEaXNwb3NpdGl2byBkZSBoYXJkd2FyZSAoVG9rZW4pIEPzZGlnbyBkZSBhY3JlZGl0YWNp8246IDE2LUVDRC0wMDIwDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCA/gwJwYDVR0lBCAwHgYIKwYBBQUHAwEGCCsGAQUFBwMCBggrBgEFBQcDBDAdBgNVHQ4EFgQULT/hrpGC+s2ivoBNvEPaqtTD/+8wHwYDVR0jBBgwFoAUZhmj9ZswsAxOTRmZYEIJ0loxSocwggHRBgNVHR8EggHIMIIBxDCB9aCB8qCB74Z0aHR0cDovL3d3dy5jZXJ0aWNhbWFyYS5jb20vcmVwb3NpdG9yaW9yZXZvY2FjaW9uZXMvYWNfc3Vib3JkaW5hZGFfY2VydGljYW1hcmFfY29uX2V4dGVuc2lvbl9jcml0aWNhXzQwOTYuY3JsP2NybD1jcmyGd2h0dHA6Ly9taXJyb3IuY2VydGljYW1hcmEuY29tL3JlcG9zaXRvcmlvcmV2b2NhY2lvbmVzL2FjX3N1Ym9yZGluYWRhX2NlcnRpY2FtYXJhX2Nvbl9leHRlbnNpb25fY3JpdGljYV80MDk2LmNybD9jcmw9Y3JsMIHJoIHGoIHDhl5odHRwOi8vd3d3LmNlcnRpY2FtYXJhLmNvbS9yZXBvc2l0b3Jpb3Jldm9jYWNpb25lcy9hY19zdWJvcmRpbmFkYV9jZXJ0aWNhbWFyYV80MDk2LmNybD9jcmw9Y3JshmFodHRwOi8vbWlycm9yLmNlcnRpY2FtYXJhLmNvbS9yZXBvc2l0b3Jpb3Jldm9jYWNpb25lcy9hY19zdWJvcmRpbmFkYV9jZXJ0aWNhbWFyYV80MDk2LmNybD9jcmw9Y3JsMA0GCSqGSIb3DQEBCwUAA4ICAQB1Shc0U2TK2ZP41b7mQhAcy2L/V4ntpA/HWQAsmXDH8ilTTpOTSXZGoKE1WrWTY74oh3wn4DulMFzNhSKSCzHTc9bP4khLfgzjjhuBn+VLr+xFg/i0XQWPg4Q/QnzzEVGYO0crdtdjMP3E/0dJIrTrQ7tESgkaeBoZ9JW1RsnzFs9YMTFty48bn565/t/YkaAtH/jSvr9LMQrDTXa+lkbGwufFj8AiqwLHKX2ZyuAqQ62NAcU+34Ca82XX5UZZM33rZquDp3bbM3ge3OXBhkf60W1liUwb8bd+7qaM7AYvF4hNIFWAqrCSZ0iNkNmtgfZ3bJOFH+Iwb+fk0A4SCpZpVFXTjCUFHBbunC6J1UtksPvrx8HXK9y8Q8TtaVit3jmDOBJxVBjbVlyKKwmHICnA/d+4RTiCs1HtkF9mVw98eelbReich0yOaDcH4e/Dk8ooMy3ubwjkl4PGmmGgN/H30xeaS9exAfbdyu4TvbZ6J7NYeXwKGsV75VYGhL6NPgySSDS0ZFh+/S/mOdqbPwibGR5uS+VQb/dhVgrXCE1aD4DaUhw46RoDryRtaFXeiilSpSVqGwkQz/OLL1Zi0K7HlEamgZsmvNnC8X8yJed1/xx4kjyJqRdzgC3tUuC8V7ie69p/ShdORkDlbybMXIFJZ1QxGnpAlOeu7hx1uc7YxA==</ds:X509Certificate></ds:X509Data></ds:KeyInfo><ds:Object><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" xmlns:xades141="http://uri.etsi.org/01903/v1.4.1#" Target="#xmldsig-ab2df1fb-1819-413d-8b8c-79e9ed75638a"><xades:SignedProperties Id="xmldsig-ab2df1fb-1819-413d-8b8c-79e9ed75638a-signedprops"><xades:SignedSignatureProperties><xades:SigningTime>2026-01-04T14:07:57.867-05:00</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>XxJ2vR6QfloXggIqmmjlrmRUDfjBaxV7GbhGwD2na6Q=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>CN=AC SUB CERTICAMARA,O=CERTICAMARA S.A,OU=NIT 830084433-7,C=CO,ST=DISTRITO CAPITAL,L=BOGOTA,STREET=www.certicamara.com</ds:X509IssuerName><ds:X509SerialNumber>3530616812481298580959095206437476128</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><xades:SignaturePolicyIdentifier><xades:SignaturePolicyId><xades:SigPolicyId><xades:Identifier>https://facturaelectronica.dian.gov.co/politicadefirma/v2/politicadefirmav2.pdf</xades:Identifier></xades:SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>dMoMvtcG5aIzgYo0tIsSQeVJBDnUnfSOfBpxXrmor0Y=</ds:DigestValue></xades:SigPolicyHash></xades:SignaturePolicyId></xades:SignaturePolicyIdentifier><xades:SignerRole><xades:ClaimedRoles><xades:ClaimedRole>supplier</xades:ClaimedRole></xades:ClaimedRoles></xades:SignerRole></xades:SignedSignatureProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></ext:ExtensionContent>
+    </ext:UBLExtension>
+    <ext:UBLExtension>
+      <ext:ExtensionContent>
+        <CustomTagGeneral>
+          <Name>Responsable</Name>
+          <Value>www.minsalud.gov.co</Value>
+          <Interoperabilidad>
+            <Group schemeName="Sector Salud">
+              <Collection schemeName="Usuario">
+                <AdditionalInformation>
+                  <Name>CODIGO_PRESTADOR</Name>
+                  <Value>2001301346</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>TIPO_DOCUMENTO_IDENTIFICACION</Name>
+                  <Value schemeName="salud_identificación.gc" schemeID="RC">Registro Civil</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>NUMERO_DOCUMENTO_IDENTIFICACION</Name>
+                  <Value>1066359589</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>PRIMER_APELLIDO</Name>
+                  <Value>ZAMBRANO</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>SEGUNDO_APELLIDO</Name>
+                  <Value>QUIROZ</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>PRIMER_NOMBRE</Name>
+                  <Value>EMILY</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>SEGUNDO_NOMBRE</Name>
+                  <Value>GISELL</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>TIPO_USUARIO</Name>
+                  <Value schemeName="salud_tipo_usuario.gc" schemeID="04">Subsidiado</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>MODALIDAD_PAGO</Name>
+                  <Value schemeName="salud_modalidad_pago.gc" schemeID="04">Pago por evento.</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>NUMERO_AUTORIZACION</Name>
+                  <Value>93203582</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>NUMERO_MIPRES</Name>
+                  <Value></Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>COBERTURA_PLAN_BENEFICIOS</Name>
+                  <Value schemeName="salud_cobertura.gc" schemeID="01">Plan de beneficios en salud financiado con UPC</Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>NUMERO_CONTRATO</Name>
+                  <Value></Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>NUMERO_POLIZA</Name>
+                  <Value></Value>
+                </AdditionalInformation>
+                <AdditionalInformation>
+                  <Name>ELABORADO_POR</Name>
+                  <Value>ANDREA PAHOLA DIAZ ARAUJO</Value>
+                </AdditionalInformation>
+              </Collection>
+            </Group>
+          </Interoperabilidad>
+        </CustomTagGeneral>
+      </ext:ExtensionContent>
+    </ext:UBLExtension>
+  </ext:UBLExtensions>
+  <cbc:UBLVersionID>UBL 2.1</cbc:UBLVersionID>
+  <cbc:CustomizationID>SS-CUFE</cbc:CustomizationID>
+  <cbc:ProfileID>DIAN 2.1: Factura Electrónica de Venta</cbc:ProfileID>
+  <cbc:ProfileExecutionID>1</cbc:ProfileExecutionID>
+  <cbc:ID>SMSG111456</cbc:ID>
+  <cbc:UUID schemeID="1" schemeName="CUFE-SHA384">9174da2992e57909ecd61e8629c89af2af124e3963e1b6838c93dd21aaafa717fd037023c14efef62b8f829e6add88c8</cbc:UUID>
+  <cbc:IssueDate>2026-01-04</cbc:IssueDate>
+  <cbc:IssueTime>14:06:54-05:00</cbc:IssueTime>
+  <cbc:DueDate>2026-02-03</cbc:DueDate>
+  <cbc:InvoiceTypeCode>01</cbc:InvoiceTypeCode>
+  <cbc:Note>SMSG1114562026-01-0414:06:54-05:0065700.00010.00040.00030.0065700.0090034576583000356497693913df092affad3d544dcb66a88651365000ee90f5762044ec5b0d00a6b21 - SMSG1114562026-01-0414:06:54-05:0065700.00010.00040.00030.0065700.0090034576583000356497693913df092affad3d544dcb66a88651365000ee90f5762044ec5b0d00a6b21</cbc:Note>
+  <cbc:TaxPointDate>2026-02-03</cbc:TaxPointDate>
+  <cbc:DocumentCurrencyCode>COP</cbc:DocumentCurrencyCode>
+  <cbc:LineCountNumeric>1</cbc:LineCountNumeric>
+  <cac:InvoicePeriod>
+    <cbc:StartDate>2025-12-27</cbc:StartDate>
+    <cbc:StartTime>00:00:00-05:00</cbc:StartTime>
+    <cbc:EndDate>2025-12-27</cbc:EndDate>
+    <cbc:EndTime>23:59:59-05:00</cbc:EndTime>
+  </cac:InvoicePeriod>
+  <cac:AccountingSupplierParty>
+    <cbc:AdditionalAccountID schemeAgencyID="195">1</cbc:AdditionalAccountID>
+    <cac:Party>
+      <cac:PartyName>
+        <cbc:Name>EMPRESA MULTIACTIVA DE SALUD SERMULTISALUD S.A.S.</cbc:Name>
+      </cac:PartyName>
+      <cac:PhysicalLocation>
+        <cac:Address>
+          <cbc:ID>20013</cbc:ID>
+          <cbc:CityName>AGUSTÍN CODAZZI</cbc:CityName>
+          <cbc:CountrySubentity>Cesar</cbc:CountrySubentity>
+          <cbc:CountrySubentityCode>20</cbc:CountrySubentityCode>
+          <cac:AddressLine>
+            <cbc:Line>CALLE 14 NO 1305</cbc:Line>
+          </cac:AddressLine>
+          <cac:Country>
+            <cbc:IdentificationCode>CO</cbc:IdentificationCode>
+            <cbc:Name languageID="es">Colombia</cbc:Name>
+          </cac:Country>
+        </cac:Address>
+      </cac:PhysicalLocation>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>EMPRESA MULTIACTIVA DE SALUD SERMULTISALUD S.A.S.</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="1" schemeName="31" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)" schemeAgencyID="195">900345765</cbc:CompanyID>
+        <cbc:TaxLevelCode listName="48">R-99-PN</cbc:TaxLevelCode>
+        <cac:RegistrationAddress>
+          <cbc:ID>20013</cbc:ID>
+          <cbc:CityName>AGUSTÍN CODAZZI</cbc:CityName>
+          <cbc:CountrySubentity>Cesar</cbc:CountrySubentity>
+          <cbc:CountrySubentityCode>20</cbc:CountrySubentityCode>
+          <cac:AddressLine>
+            <cbc:Line>CALLE 14 NO 1305</cbc:Line>
+          </cac:AddressLine>
+          <cac:Country>
+            <cbc:IdentificationCode>CO</cbc:IdentificationCode>
+            <cbc:Name languageID="es">Colombia</cbc:Name>
+          </cac:Country>
+        </cac:RegistrationAddress>
+        <cac:TaxScheme>
+          <cbc:ID>01</cbc:ID>
+          <cbc:Name>IVA</cbc:Name>
+        </cac:TaxScheme>
+      </cac:PartyTaxScheme>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName>EMPRESA MULTIACTIVA DE SALUD SERMULTISALUD S.A.S.</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="1" schemeName="31" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)" schemeAgencyID="195">900345765</cbc:CompanyID>
+        <cac:CorporateRegistrationScheme>
+          <cbc:ID>SMSG</cbc:ID>
+          <cbc:Name>EMPRESA MULTIACTIVA DE SALUD SERMULTISALUD S.A.S.</cbc:Name>
+        </cac:CorporateRegistrationScheme>
+      </cac:PartyLegalEntity>
+      <cac:Contact>
+        <cbc:Name>BERTHA DUARTE</cbc:Name>
+        <cbc:Telephone>3176682450</cbc:Telephone>
+        <cbc:Telefax>0955765928</cbc:Telefax>
+        <cbc:ElectronicMail>fe.sermultisaludclinicacodazzi@gmail.com</cbc:ElectronicMail>
+      </cac:Contact>
+    </cac:Party>
+  </cac:AccountingSupplierParty>
+  <cac:AccountingCustomerParty>
+    <cbc:AdditionalAccountID>1</cbc:AdditionalAccountID>
+    <cac:Party>
+      <cac:PartyName>
+        <cbc:Name>ENTIDAD PROMOTORA DE SALUD FAMISANAR SAS EPS FAMISANAR SAS</cbc:Name>
+      </cac:PartyName>
+      <cac:PhysicalLocation>
+        <cac:Address>
+          <cbc:ID>11001</cbc:ID>
+          <cbc:CityName>BOGOTA D.C</cbc:CityName>
+          <cbc:CountrySubentity>Bogota</cbc:CountrySubentity>
+          <cbc:CountrySubentityCode>11</cbc:CountrySubentityCode>
+          <cac:AddressLine>
+            <cbc:Line>CARRERA 22 N 168 84</cbc:Line>
+          </cac:AddressLine>
+          <cac:Country>
+            <cbc:IdentificationCode>CO</cbc:IdentificationCode>
+            <cbc:Name languageID="es">Colombia</cbc:Name>
+          </cac:Country>
+        </cac:Address>
+      </cac:PhysicalLocation>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>ENTIDAD PROMOTORA DE SALUD FAMISANAR SAS EPS FAMISANAR SAS</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="7" schemeName="31" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)" schemeAgencyID="195">830003564</cbc:CompanyID>
+        <cbc:TaxLevelCode listName="48">R-99-PN</cbc:TaxLevelCode>
+        <cac:RegistrationAddress>
+          <cbc:ID>11001</cbc:ID>
+          <cbc:CityName>BOGOTA D.C</cbc:CityName>
+          <cbc:CountrySubentity>Bogota</cbc:CountrySubentity>
+          <cbc:CountrySubentityCode>11</cbc:CountrySubentityCode>
+          <cac:AddressLine>
+            <cbc:Line>CARRERA 22 N 168 84</cbc:Line>
+          </cac:AddressLine>
+          <cac:Country>
+            <cbc:IdentificationCode>CO</cbc:IdentificationCode>
+            <cbc:Name languageID="es">Colombia</cbc:Name>
+          </cac:Country>
+        </cac:RegistrationAddress>
+        <cac:TaxScheme>
+          <cbc:ID>01</cbc:ID>
+          <cbc:Name>IVA</cbc:Name>
+        </cac:TaxScheme>
+      </cac:PartyTaxScheme>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName>ENTIDAD PROMOTORA DE SALUD FAMISANAR SAS EPS FAMISANAR SAS</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="7" schemeName="31" schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)" schemeAgencyID="195">830003564</cbc:CompanyID>
+        <cac:CorporateRegistrationScheme>
+          <cbc:Name>ENTIDAD PROMOTORA DE SALUD FAMISANAR SAS EPS FAMISANAR SAS</cbc:Name>
+        </cac:CorporateRegistrationScheme>
+      </cac:PartyLegalEntity>
+      <cac:Contact>
+        <cbc:Name>ENTIDAD PROMOTORA DE SALUD FAMISANAR SAS EPS FAMISANAR SAS</cbc:Name>
+        <cbc:Telephone>0316500200</cbc:Telephone>
+        <cbc:Telefax></cbc:Telefax>
+        <cbc:ElectronicMail>cuentas.medicas@facturacion.famisanar.com.co</cbc:ElectronicMail>
+      </cac:Contact>
+    </cac:Party>
+  </cac:AccountingCustomerParty>
+  <cac:PaymentMeans>
+    <cbc:ID schemeName="salud_modalidades_pago.gc" schemeID="04">2</cbc:ID>
+    <cbc:PaymentMeansCode>47</cbc:PaymentMeansCode>
+    <cbc:PaymentDueDate>2026-02-03</cbc:PaymentDueDate>
+    <cbc:PaymentID>0100554864</cbc:PaymentID>
+  </cac:PaymentMeans>
+  <cac:LegalMonetaryTotal>
+    <cbc:LineExtensionAmount currencyID="COP">65700.00</cbc:LineExtensionAmount>
+    <cbc:TaxExclusiveAmount currencyID="COP">0.00</cbc:TaxExclusiveAmount>
+    <cbc:TaxInclusiveAmount currencyID="COP">65700.00</cbc:TaxInclusiveAmount>
+    <cbc:AllowanceTotalAmount currencyID="COP">0.00</cbc:AllowanceTotalAmount>
+    <cbc:ChargeTotalAmount currencyID="COP">0.00</cbc:ChargeTotalAmount>
+    <cbc:PrepaidAmount currencyID="COP">0.00</cbc:PrepaidAmount>
+    <cbc:PayableAmount currencyID="COP">65700.00</cbc:PayableAmount>
+  </cac:LegalMonetaryTotal>
+  <cac:InvoiceLine>
+    <cbc:ID>1</cbc:ID>
+    <cbc:InvoicedQuantity unitCode="NIU">1</cbc:InvoicedQuantity>
+    <cbc:LineExtensionAmount currencyID="COP">65700.0000</cbc:LineExtensionAmount>
+    <cbc:FreeOfChargeIndicator>false</cbc:FreeOfChargeIndicator>
+    <cac:Item>
+      <cbc:Description>CONSULTA DE CONTROL O DE SEGUIMIENTO POR ESPECIALISTA EN PEDIATRIA</cbc:Description>
+      <cac:SellersItemIdentification>
+        <cbc:ID>890383</cbc:ID>
+      </cac:SellersItemIdentification>
+      <cac:StandardItemIdentification>
+        <cbc:ID schemeID="001" schemeName="UNSPSC" schemeAgencyID="10">890383</cbc:ID>
+      </cac:StandardItemIdentification>
+    </cac:Item>
+    <cac:Price>
+      <cbc:PriceAmount currencyID="COP">65700.0000</cbc:PriceAmount>
+      <cbc:BaseQuantity unitCode="NIU">1.00</cbc:BaseQuantity>
+    </cac:Price>
+  </cac:InvoiceLine>
+</Invoice>

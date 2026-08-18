@@ -1,0 +1,17 @@
+{
+  "watch": ["server.js", "services"],
+  "ext": "js",
+  "ignore": [
+    "cert/**",
+    "logs/**",
+    "firmados/**",
+    "node_modules/**",
+    "public/**",
+    "**/*.xml",
+    "**/*.zip",
+    "**/*.json"
+  ],
+  "delay": 2500,
+  "signal": "SIGTERM",
+  "legacyWatch": false
+}

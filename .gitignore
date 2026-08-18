@@ -1,0 +1,28 @@
+# Dependencias
+**/node_modules/
+
+# Entorno
+**/.env
+!**/.env.example
+**/.runtime-port
+
+# Build
+**/dist/
+**/.quasar/
+
+# Logs y certificados sensibles
+**/logs/
+Scripts/windows-services/tools/
+**/*.p12
+**/*.pfx
+**/*.pem
+**/cert.env
+ServerFEpos/cert/companies/**/*
+!ServerFEpos/cert/companies/README.md
+Sever.Conexa/storage/dian-certs/*
+!Sever.Conexa/storage/dian-certs/.gitkeep
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+*.log

@@ -1,0 +1,19 @@
+# Solo para pruebas de fin de jornada / integración.
+# Desarrollo diario: PostgreSQL local (ver README y Sever.Conexa/.env).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: erpconexa-db
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: Conexa
+    volumes:
+      - erpconexa_pgdata:/var/lib/postgresql/data
+
+volumes:
+  erpconexa_pgdata:

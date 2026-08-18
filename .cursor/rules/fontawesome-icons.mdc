@@ -1,0 +1,44 @@
+---
+description: Iconos UI — usar Font Awesome gratis como catálogo de referencia
+alwaysApply: true
+---
+
+# Iconos — Font Awesome (gratis)
+
+Cuando hagan falta iconos nuevos en UI (botones, menús, tabs, diálogos, estados), buscarlos en:
+
+**https://fontawesome.com/icons**
+
+## Reglas
+
+1. **Solo iconos gratuitos** (filtro *Free* en Font Awesome). No usar iconos Pro ni de pago.
+2. **Preferir nombres claros** que comuniquen la acción o el módulo (ej. `receipt`, `user`, `gear`, `cloud-arrow-up`).
+3. **Cada botón o acción principal** debe llevar su icono cuando tenga sentido en la interfaz.
+
+## ErpConexa (Quasar)
+
+El proyecto usa **Quasar** (`q-icon`, `q-btn icon=`, tabs, items del drawer).
+
+- Catálogo por defecto hoy: **Material Icons** (`quasar.config.js` → `extras: ['material-icons']`).
+- Si el icono existe en Material Icons y encaja, se puede usar el nombre Material (ej. `shopping_cart`, `receipt_long`).
+- Si se elige un icono **solo disponible en Font Awesome Free**, habilitar el extra en `ErpConexa/quasar.config.js`:
+
+```js
+extras: [
+  'material-icons',
+  'fontawesome-v6', // solo iconos free
+],
+```
+
+Uso en componentes con prefijo Font Awesome 6:
+
+```vue
+<q-icon name="fas fa-file-invoice" />
+<q-btn icon="fas fa-user-plus" label="Nuevo cliente" />
+```
+
+Convención de prefijos FA6 free: `fas` (solid), `far` (regular), `fab` (brands).
+
+## Verificación
+
+Antes de usar un icono, confirmar en [fontawesome.com/icons](https://fontawesome.com/icons) que aparece como **Free**. Si no está claro, elegir otra variante free o el equivalente en Material Icons.
