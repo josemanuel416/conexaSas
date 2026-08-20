@@ -107,6 +107,7 @@ async function migrate() {
   await runSqlFile('035_accounting_taxes.sql');
   await runSqlFile('036_accounting_reports_permission.sql');
   await runSqlFile('037_public_site_support.sql');
+  await runSqlFile('038_site_landing_copy.sql');
   await seedDaneLocations();
   await seedAdmin();
   await seedConexaSoftCompany();

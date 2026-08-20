@@ -117,4 +117,5 @@ Esquema SQL de referencia en `Scripts/database/`.
 
 - [Arquitectura](./Scripts/docs/ARQUITECTURA.md)
 - [Permisos](./Scripts/docs/PERMISOS.md)
+- [Seguridad (evaluación comercial)](./Scripts/docs/SEGURIDAD.md)
 - README por proyecto en cada carpeta

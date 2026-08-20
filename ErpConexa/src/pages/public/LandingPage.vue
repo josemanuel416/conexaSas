@@ -2,12 +2,12 @@
   <q-page class="landing-page">
     <section class="landing-hero">
       <div class="landing-hero__inner">
-        <div class="row q-col-gutter-md items-center">
+        <div class="row q-col-gutter-sm items-center">
           <div class="col-12 col-md-6">
-            <div class="landing-hero__badge">ERP modular para PYMES</div>
+            <div class="landing-hero__badge">ERP modular para PYMES en Colombia</div>
             <h1 class="landing-hero__title">{{ site.heroTitle || 'ConexaSoft ERP' }}</h1>
             <p class="landing-hero__subtitle">{{ site.heroSubtitle || tagline }}</p>
-            <div class="row q-gutter-sm q-mt-md">
+            <div class="row q-gutter-sm landing-hero__actions">
               <q-btn unelevated color="white" text-color="primary" no-caps label="Solicitar demo" href="#contacto" />
               <q-btn outline color="white" no-caps label="Ingresar" to="/login" />
             </div>
@@ -46,7 +46,10 @@
       <div class="landing-section__inner">
         <div class="text-center q-mb-lg">
           <h2 class="landing-section__title">¿Por qué ConexaSoft?</h2>
-          <p class="landing-section__lead">Todo lo que su empresa necesita para operar con orden y cumplimiento.</p>
+          <p class="landing-section__lead">
+            Porque su operación diaria y su facturación DIAN no deberían vivir en sistemas distintos.
+            ErpConexa es un ERP modular para PYMES colombianas — sólido hoy, preparado para la gestión inteligente del mañana.
+          </p>
         </div>
         <div class="row q-col-gutter-md">
           <div v-for="(item, idx) in site.benefits" :key="idx" class="col-12 col-sm-6 col-md-4">
@@ -60,7 +63,57 @@
       </div>
     </section>
 
-    <section id="paquetes" class="landing-section">
+    <section class="landing-section">
+      <div class="landing-section__inner">
+        <div class="text-center q-mb-lg">
+          <h2 class="landing-section__title">Cómo funciona</h2>
+          <p class="landing-section__lead">Tres pasos. Un solo sistema. Datos reales de su negocio.</p>
+        </div>
+        <div class="row q-col-gutter-md">
+          <div v-for="step in howItWorks" :key="step.title" class="col-12 col-md-4">
+            <div class="landing-step">
+              <div class="landing-step__num">{{ step.num }}</div>
+              <q-icon :name="step.icon" size="32px" color="primary" class="q-mb-sm" />
+              <h3>{{ step.title }}</h3>
+              <p>{{ step.text }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section landing-section--ai">
+      <div class="landing-section__inner">
+        <div class="row q-col-gutter-lg items-center">
+          <div class="col-12 col-md-7">
+            <div class="landing-ai__badge">Nuestro rumbo</div>
+            <h2 class="landing-section__title landing-ai__title">Gestión inteligente sobre datos reales</h2>
+            <p class="landing-ai__text">
+              La inteligencia artificial solo aporta valor cuando descansa sobre información confiable.
+              Por eso ConexaSoft construye primero un ERP sólido — ventas, caja, inventario, DIAN y contabilidad unificados —
+              y sobre esa base desarrolla capacidades inteligentes para ayudar a decidir, automatizar y anticipar.
+            </p>
+            <p class="landing-ai__text q-mb-none">
+              <strong>Hoy:</strong> operación completa y facturación DIAN integrada.
+              <strong>Mañana:</strong> asistentes y automatización inteligente sobre la misma plataforma.
+            </p>
+          </div>
+          <div class="col-12 col-md-5">
+            <div class="landing-ai__panel">
+              <div v-for="item in aiPillars" :key="item.title" class="landing-ai__item">
+                <q-icon :name="item.icon" color="white" size="22px" />
+                <div>
+                  <strong>{{ item.title }}</strong>
+                  <p>{{ item.text }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="paquetes" class="landing-section landing-section--muted">
       <div class="landing-section__inner">
         <div class="text-center q-mb-lg">
           <h2 class="landing-section__title">Paquetes</h2>
@@ -98,12 +151,14 @@
       </div>
     </section>
 
-    <section id="contacto" class="landing-section landing-section--muted">
+    <section id="contacto" class="landing-section">
       <div class="landing-section__inner">
         <div class="row q-col-gutter-md">
           <div class="col-12 col-md-5">
             <h2 class="landing-section__title">Contacto</h2>
-            <p class="landing-section__lead q-mb-md">Cuéntenos sobre su empresa y le respondemos pronto.</p>
+            <p class="landing-section__lead q-mb-md">
+              Cuéntenos cómo opera su empresa hoy y le mostramos cómo ErpConexa puede unificar su operación, facturación DIAN y preparar el camino hacia la gestión inteligente.
+            </p>
             <div v-if="site.contact?.email" class="landing-contact-item">
               <q-icon name="email" color="primary" /> {{ site.contact.email }}
             </div>
@@ -164,6 +219,45 @@ const contactForm = reactive({
   message: '',
 })
 
+const howItWorks = [
+  {
+    num: '1',
+    icon: 'storefront',
+    title: 'Opere',
+    text: 'Registre ventas, cobros en caja, citas o movimientos de inventario con clientes y catálogos unificados.',
+  },
+  {
+    num: '2',
+    icon: 'receipt_long',
+    title: 'Facture',
+    text: 'Convierta la operación en factura electrónica, envíe a la DIAN y consulte el estado de cada intento.',
+  },
+  {
+    num: '3',
+    icon: 'insights',
+    title: 'Controle y crezca',
+    text: 'Cierre caja, revise existencias, lleve contabilidad y prepare datos reales para decisiones — e inteligencia — futuras.',
+  },
+]
+
+const aiPillars = [
+  {
+    icon: 'foundation',
+    title: 'ERP sólido primero',
+    text: 'Módulos reales, datos unificados, DIAN integrada.',
+  },
+  {
+    icon: 'psychology',
+    title: 'IA con propósito',
+    text: 'Capacidades inteligentes sobre información verificable, no sobre suposiciones.',
+  },
+  {
+    icon: 'trending_up',
+    title: 'Evolución continua',
+    text: 'La plataforma crece con su operación y con las necesidades de su empresa.',
+  },
+]
+
 const req = (v) => !!v?.trim?.() || !!v || 'Requerido'
 
 function formatMoney(v) {
@@ -203,9 +297,9 @@ onMounted(async () => {
 
 <style scoped>
 .landing-hero {
-  background: linear-gradient(135deg, #0d7377 0%, #14a085 55%, #1cb5a3 100%);
+  background: linear-gradient(135deg, #0d47a1 0%, #1976d2 55%, #1565c0 100%);
   color: white;
-  padding: 28px 16px 32px;
+  padding: 16px 16px 20px;
 }
 .landing-hero__inner,
 .landing-section__inner {
@@ -215,36 +309,39 @@ onMounted(async () => {
 .landing-hero__badge {
   display: inline-block;
   background: rgba(255, 255, 255, 0.2);
-  padding: 5px 12px;
+  padding: 3px 10px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 .landing-hero__title {
-  font-size: clamp(1.45rem, 3.2vw, 2rem);
+  font-size: clamp(1.35rem, 2.8vw, 1.85rem);
   font-weight: 700;
-  line-height: 1.15;
-  margin: 0 0 8px;
+  line-height: 1.12;
+  margin: 0 0 4px;
 }
 .landing-hero__subtitle {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   opacity: 1;
   max-width: 480px;
   margin: 0;
-  line-height: 1.45;
+  line-height: 1.35;
+}
+.landing-hero__actions {
+  margin-top: 10px;
 }
 .landing-hero__logo-panel {
   background: #ffffff;
-  border-radius: 16px;
-  padding: 14px 18px 12px;
-  width: min(100%, 420px);
+  border-radius: 12px;
+  padding: 10px 14px 8px;
+  width: min(100%, 360px);
   text-align: center;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
 }
 .landing-hero__logo-img {
   width: 100%;
-  max-width: 340px;
+  max-width: 280px;
   height: auto;
   display: block;
   margin: 0 auto;
@@ -308,15 +405,15 @@ onMounted(async () => {
   position: relative;
 }
 .landing-plan--featured {
-  border-color: #0d7377;
-  box-shadow: 0 8px 24px rgba(13, 115, 119, 0.12);
+  border-color: #1976d2;
+  box-shadow: 0 8px 24px rgba(25, 118, 210, 0.15);
   transform: none;
 }
 .landing-plan__ribbon {
   position: absolute;
   top: 10px;
   right: 10px;
-  background: #0d7377;
+  background: #1976d2;
   color: white;
   font-size: 10px;
   font-weight: 600;
@@ -338,7 +435,7 @@ onMounted(async () => {
 .landing-plan__amount {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #0d7377;
+  color: #1976d2;
 }
 .landing-plan__period {
   color: #5f6f77;
@@ -368,5 +465,91 @@ onMounted(async () => {
   background: white;
   border-radius: 16px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+.landing-step {
+  background: white;
+  border-radius: 12px;
+  padding: 18px 16px;
+  height: 100%;
+  text-align: center;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+.landing-step__num {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #1976d2;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.landing-step h3 {
+  font-size: 1.05rem;
+  margin: 4px 0 6px;
+}
+.landing-step p {
+  color: #5f6f77;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.landing-section--ai {
+  background: linear-gradient(135deg, #0d47a1 0%, #1976d2 55%, #1565c0 100%);
+  color: white;
+  padding: 36px 16px;
+}
+.landing-section--ai .landing-section__title,
+.landing-ai__title {
+  color: white;
+}
+.landing-ai__badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.landing-ai__text {
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.55;
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+}
+.landing-ai__panel {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  padding: 16px;
+}
+.landing-ai__item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+.landing-ai__item:last-child {
+  margin-bottom: 0;
+}
+.landing-ai__item strong {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 2px;
+}
+.landing-ai__item p {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.88;
+  line-height: 1.4;
 }
 </style>

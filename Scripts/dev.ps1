@@ -21,7 +21,7 @@ function Start-DevService($name, $path, $command, $env = @{}) {
     ) | Out-Null
 }
 
-Write-Host "`nDevConexa — perfil: $Profile (Node local`$(if ($WithDocker) { ', BD Docker' }))`n" -ForegroundColor Cyan
+Write-Host "`nDevConexa - perfil: $Profile (Node local`$(if ($WithDocker) { ', BD Docker' }))`n" -ForegroundColor Cyan
 
 if ($WithDocker) {
     Write-Host "PostgreSQL (Docker)..." -ForegroundColor Yellow
@@ -49,11 +49,11 @@ Write-Host @"
 
 Servicios iniciados en ventanas separadas.
 
-  ERP:    http://localhost:9500  (API vía proxy → puerto 3500 o alternativo)
-  FEpos:  http://localhost:3010  (DIAN — reiniciar: .\Scripts\restart-fepos.ps1)
+  ERP:    http://localhost:9500  (API via proxy -> puerto 3500 o alternativo)
+  FEpos:  http://localhost:3010  (DIAN - reiniciar: .\Scripts\restart-fepos.ps1)
 $(if ($Profile -eq "all") { "  Chat:   http://localhost:3001" })
 
-  Servicios Windows (recomendado, más estables):
+  Servicios Windows (recomendado, mas estables):
     .\Scripts\windows-services.ps1 -Action Install
 
 "@ -ForegroundColor Green

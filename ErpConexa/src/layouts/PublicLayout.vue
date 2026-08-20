@@ -52,6 +52,9 @@ const year = new Date().getFullYear()
 </script>
 
 <style scoped>
+.public-header {
+  background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
+}
 .public-header__brand {
   text-decoration: none;
 }
@@ -76,7 +79,7 @@ const year = new Date().getFullYear()
   line-height: 1;
 }
 .public-header__name-soft {
-  color: #b2f5ea;
+  color: #90caf9;
   font-weight: 500;
 }
 .public-header__link {
@@ -89,7 +92,7 @@ const year = new Date().getFullYear()
   font-size: 14px;
 }
 .public-footer {
-  background: #1a2e35;
+  background: #0d47a1;
   color: rgba(255, 255, 255, 0.85);
   padding: 10px 12px;
 }
@@ -123,7 +126,7 @@ const year = new Date().getFullYear()
   text-align: right;
 }
 .public-footer__link {
-  color: #7dd3c0;
+  color: #90caf9;
   text-decoration: none;
 }
 .public-footer__link:hover {

@@ -11,4 +11,4 @@ export const BRAND_ASSETS = {
   brandLogin: '/brand/conexasoft-brand-login.png',
 }
 
-export const BRAND_TAGLINE = 'Gestión inteligente para empresas reales.'
+export const BRAND_TAGLINE = 'ERP sólido hoy. Gestión inteligente sobre datos reales.'

@@ -46,7 +46,7 @@ const brandAssets = BRAND_ASSETS
 <style scoped>
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0d7377 0%, #14a085 55%, #1cb5a3 100%);
+  background: linear-gradient(135deg, #0d47a1 0%, #1976d2 55%, #1565c0 100%);
   padding: 24px 16px;
 }
 .login-page__container {
@@ -88,7 +88,7 @@ const brandAssets = BRAND_ASSETS
   margin-top: 4px;
 }
 .login-card__links :deep(a) {
-  color: #0d7377;
+  color: #1976d2;
   text-decoration: none;
   font-size: 13px;
 }
@@ -103,10 +103,10 @@ const brandAssets = BRAND_ASSETS
 
 <style>
 .login-page .login-submit-btn {
-  background: #0d7377 !important;
+  background: #1976d2 !important;
   color: #fff !important;
 }
 .login-page .login-submit-btn:hover {
-  background: #0a5c5f !important;
+  background: #1565c0 !important;
 }
 </style>
