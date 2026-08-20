@@ -1,5 +1,6 @@
 // server.js
 require('dotenv').config();
+process.env.TZ = process.env.TZ || 'America/Bogota';
 const express = require('express');
 const fs = require('fs');
 const path = require('path');

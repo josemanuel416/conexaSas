@@ -47,6 +47,7 @@ import {
   nextDianFileSequence,
   zipFileNameFromAttached,
 } from '../../utils/dian-file-name.js';
+import { yearFromDateValue } from '../../utils/app-timezone.js';
 import { buildInvoicePdf, buildInvoicePdfFileName } from '../../utils/invoice-pdf.js';
 import { buildSalesDocumentPdf, buildSalesDocumentPdfFileName } from '../../utils/sales-document-pdf.js';
 import { buildInvoiceClientEmailContent } from '../../utils/invoice-email-template.js';
@@ -231,9 +232,7 @@ async function resolveAttachedDocumentFileName(submission, companyRow, companyDi
 
   let fileName = attachedDocumentFileNameFromZip(submission.zip_file_name);
   if (!fileName) {
-    const issueYear = invoice.issueDate
-      ? new Date(invoice.issueDate).getFullYear()
-      : new Date().getFullYear();
+    const issueYear = yearFromDateValue(invoice.issueDate);
     const sequence = await nextDianFileSequence(pool, companyRow.id, 'ad', issueYear);
     fileName = buildDianAttachedDocumentFileName({
       nit: companyDian.nit,

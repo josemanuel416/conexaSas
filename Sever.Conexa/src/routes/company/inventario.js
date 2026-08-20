@@ -35,6 +35,7 @@ import {
   buildMovimientoDetalleExcelFileName,
   buildExistenciasReportExcelFileName,
 } from '../../utils/inventario-report-excel.js';
+import { formatDateTimeEs, todayIsoDate } from '../../utils/app-timezone.js';
 import {
   getInventoryMovementSettings,
   isTransferMovementCode,
@@ -339,7 +340,7 @@ async function loadBalancesForReport(companyId, { warehouseId, articleId }) {
 }
 
 async function buildReportFilters(companyId, query, type) {
-  const filters = [`Generado: ${new Date().toLocaleString('es-CO')}`];
+  const filters = [`Generado: ${formatDateTimeEs(new Date())}`];
   if (query.warehouseId) {
     const { rows } = await pool.query(
       `SELECT code, name FROM inventory_warehouses WHERE id = $1 AND company_id = $2`,
@@ -922,7 +923,7 @@ router.post('/movements', requirePermission('inventario.movimientos'), async (re
         b.targetWarehouseId || null,
         b.movementTypeId,
         docNumber,
-        b.movementDate || new Date().toISOString().slice(0, 10),
+        b.movementDate || todayIsoDate(),
         clientId,
         thirdPartyName,
         thirdPartyDocument,
@@ -1010,7 +1011,7 @@ router.put('/movements/:id', requirePermission('inventario.movimientos'), async 
         b.warehouseId,
         b.targetWarehouseId || null,
         b.movementTypeId,
-        b.movementDate || new Date().toISOString().slice(0, 10),
+        b.movementDate || todayIsoDate(),
         clientId,
         thirdPartyName,
         thirdPartyDocument,

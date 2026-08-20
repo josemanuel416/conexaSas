@@ -7,6 +7,7 @@ import { lookupDianAcquirer, validateAndEnrichClientWithDian } from '../../utils
 import { peekNextServiceCode } from '../../utils/company-settings.js';
 import { formatService, assertServiceNotDuplicate } from '../../utils/service-catalog.js';
 import { buildCajaArqueoPdf, buildCajaArqueoPdfFileName } from '../../utils/caja-arqueo-pdf.js';
+import { todayIsoDate } from '../../utils/app-timezone.js';
 
 const router = Router();
 
@@ -756,7 +757,7 @@ router.post('/sessions/open', requirePermission('caja.abrir'), async (req, res) 
     return res.status(err.status || 403).json({ error: err.message });
   }
 
-  const date = sessionDate || new Date().toISOString().slice(0, 10);
+  const date = sessionDate || todayIsoDate();
   const opening = Number(openingAmount) || 0;
   if (opening < 0) return res.status(400).json({ error: 'Saldo inicial inválido' });
 

@@ -16,7 +16,7 @@ function Copy-AppTree($from, $to) {
     New-Item -ItemType Directory -Force -Path $to | Out-Null
     $excludeDirs = @('node_modules', '.git', 'logs', 'firmados', 'validados_dian')
     Get-ChildItem $from -Force | Where-Object {
-        $_.Name -notin $excludeDirs -and $_.Name -ne '.runtime-port'
+        $_.Name -notin $excludeDirs -and $_.Name -ne '.runtime-port' -and $_.Name -ne '.env'
     } | ForEach-Object {
         Copy-Item $_.FullName -Destination (Join-Path $to $_.Name) -Recurse -Force
     }
@@ -57,20 +57,21 @@ Copy-AppTree $FeSrc $fepos
 $envApi = Join-Path $api '.env'
 if (-not (Test-Path $envApi)) {
     Copy-Item (Join-Path $ApiSrc '.env.example') $envApi
-}
-$envText = Get-Content $envApi -Raw
-$envText = [regex]::Replace($envText, '(?m)^NODE_ENV=.*$', 'NODE_ENV=production')
-if ($envText -notmatch '(?m)^NODE_ENV=') { $envText = "NODE_ENV=production`r`n$envText" }
-$envText = [regex]::Replace($envText, '(?m)^PORT=.*$', 'PORT=3500')
-$envText = [regex]::Replace($envText, '(?m)^CORS_ORIGIN=.*$', 'CORS_ORIGIN=http://localhost,http://127.0.0.1,http://localhost:3500,http://127.0.0.1:3500,http://74.208.104.128,http://74.208.104.128:3500')
-$envText = [regex]::Replace($envText, '(?m)^FEPOS_CERT_ROOT=.*$', 'FEPOS_CERT_ROOT=C:\\ConexaErp\\fepos\\cert\\companies')
-$envText = [regex]::Replace($envText, '(?m)^CERT_STORAGE_PATH=.*$', 'CERT_STORAGE_PATH=C:\\ConexaErp\\api\\storage\\dian-certs')
-if ($envText -match '(?m)^WEB_ROOT=') {
-    $envText = [regex]::Replace($envText, '(?m)^WEB_ROOT=.*$', 'WEB_ROOT=C:\\ConexaErp\\web')
+    $envText = Get-Content $envApi -Raw
+    $envText = [regex]::Replace($envText, '(?m)^NODE_ENV=.*$', 'NODE_ENV=production')
+    if ($envText -notmatch '(?m)^NODE_ENV=') { $envText = "NODE_ENV=production`r`n$envText" }
+    $envText = [regex]::Replace($envText, '(?m)^PORT=.*$', 'PORT=3500')
+    $envText = [regex]::Replace($envText, '(?m)^FEPOS_CERT_ROOT=.*$', 'FEPOS_CERT_ROOT=C:\\ConexaErp\\fepos\\cert\\companies')
+    $envText = [regex]::Replace($envText, '(?m)^CERT_STORAGE_PATH=.*$', 'CERT_STORAGE_PATH=C:\\ConexaErp\\api\\storage\\dian-certs')
+    if ($envText -match '(?m)^WEB_ROOT=') {
+        $envText = [regex]::Replace($envText, '(?m)^WEB_ROOT=.*$', 'WEB_ROOT=C:\\ConexaErp\\web')
+    } else {
+        $envText = $envText.TrimEnd() + "`r`nWEB_ROOT=C:\\ConexaErp\\web`r`n"
+    }
+    Set-Content -Path $envApi -Value $envText -Encoding utf8
 } else {
-    $envText = $envText.TrimEnd() + "`r`nWEB_ROOT=C:\\ConexaErp\\web`r`n"
+    Write-Host "  Conservando .env de produccion existente" -ForegroundColor DarkGray
 }
-Set-Content -Path $envApi -Value $envText -Encoding utf8
 
 New-Item -ItemType Directory -Force -Path (Join-Path $api 'storage\dian-certs') | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $fepos 'cert\companies') | Out-Null
@@ -82,6 +83,10 @@ if (Test-Path $svcSrc) {
     Copy-Item $svcSrc $svcDst -Recurse -Force
 }
 
+$startPath = Join-Path $Dest 'start.ps1'
+if (Test-Path $startPath) {
+    Write-Host "  Conservando start.ps1 existente (HTTPS)" -ForegroundColor DarkGray
+} else {
 $startPs1 = @'
 param([ValidateSet("Start","Stop","Status")][string]$Action = "Start")
 $ErrorActionPreference = "Stop"
@@ -124,7 +129,8 @@ switch ($Action) {
     }
 }
 '@
-Set-Content -Path (Join-Path $Dest 'start.ps1') -Value $startPs1 -Encoding UTF8
+Set-Content -Path $startPath -Value $startPs1 -Encoding UTF8
+}
 
 Write-Step "Listo"
 Write-Host @"

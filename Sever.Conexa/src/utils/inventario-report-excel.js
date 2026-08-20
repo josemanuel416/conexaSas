@@ -1,15 +1,8 @@
 import ExcelJS from 'exceljs';
+import { formatDateEs as formatDate, todayIsoDate } from './app-timezone.js';
 
 function moneyNum(value) {
   return Number(value) || 0;
-}
-
-function formatDate(value) {
-  if (!value) return '';
-  const raw = String(value);
-  const d = new Date(raw.length === 10 ? `${raw}T12:00:00` : raw);
-  if (Number.isNaN(d.getTime())) return raw.slice(0, 10);
-  return d.toLocaleDateString('es-CO');
 }
 
 function statusLabel(status) {
@@ -83,11 +76,11 @@ function styleDataRows(ws, fromRow, toRow, moneyCols = []) {
 }
 
 export function buildMovimientosReportExcelFileName() {
-  return `Movimientos-inventario-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  return `Movimientos-inventario-${todayIsoDate()}.xlsx`;
 }
 
 export function buildExistenciasReportExcelFileName() {
-  return `Existencias-inventario-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  return `Existencias-inventario-${todayIsoDate()}.xlsx`;
 }
 
 export function buildMovimientoDetalleExcelFileName(movement) {

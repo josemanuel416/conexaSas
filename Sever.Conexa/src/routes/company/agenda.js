@@ -5,6 +5,7 @@ import { formatClient, prepareClientPayload } from '../../utils/client-format.js
 import { lookupDianAcquirer, validateAndEnrichClientWithDian } from '../../utils/dian-acquirer.js';
 import { peekNextServiceCode } from '../../utils/company-settings.js';
 import { assertServiceNotDuplicate } from '../../utils/service-catalog.js';
+import { todayIsoDate } from '../../utils/app-timezone.js';
 
 const router = Router();
 
@@ -575,7 +576,7 @@ router.post('/appointments/:id/invoice', requirePermission('agenda_citas.factura
 
 // --- Facturado del día ---
 router.get('/tickets/daily', requirePermission('agenda_citas.ver_facturado'), async (req, res) => {
-  const date = req.query.date || new Date().toISOString().slice(0, 10);
+  const date = req.query.date || todayIsoDate();
 
   const { rows } = await pool.query(
     `SELECT t.*, a.appointment_date, a.start_time,

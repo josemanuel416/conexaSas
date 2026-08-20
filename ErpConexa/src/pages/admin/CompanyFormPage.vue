@@ -293,6 +293,7 @@ import { api, assetUrl } from 'src/services/api.js'
 import { themeHeaderStyle } from 'src/utils/company-theme.js'
 import { extractLogoColors } from 'src/utils/logo-colors.js'
 import CompanyPageHeader from 'src/components/company/CompanyPageHeader.vue'
+import { formatDateTime } from 'src/utils/date-format.js'
 
 const $q = useQuasar()
 const route = useRoute()
@@ -584,7 +585,7 @@ async function onSubmit() {
 
 function formatDate(value) {
   if (!value) return ''
-  return new Date(value).toLocaleString('es-CO')
+  return formatDateTime(value)
 }
 </script>
 

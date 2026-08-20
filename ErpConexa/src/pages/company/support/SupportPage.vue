@@ -82,6 +82,7 @@ import { useQuasar } from 'quasar'
 import { api } from 'src/services/api.js'
 import CompanyPageHeader from 'src/components/company/CompanyPageHeader.vue'
 import CompanyFormDialog from 'src/components/company/CompanyFormDialog.vue'
+import { formatDateTime } from 'src/utils/date-format.js'
 
 const $q = useQuasar()
 const loading = ref(false)
@@ -117,11 +118,11 @@ const columns = [
   { name: 'ticketType', label: 'Tipo', field: 'ticketType', align: 'center' },
   { name: 'subject', label: 'Asunto', field: 'subject', align: 'left' },
   { name: 'status', label: 'Estado', field: 'status', align: 'center' },
-  { name: 'updatedAt', label: 'Actualizado', field: 'updatedAt', align: 'left', format: (v) => new Date(v).toLocaleString('es-CO') },
+  { name: 'updatedAt', label: 'Actualizado', field: 'updatedAt', align: 'left', format: (v) => formatDateTime(v) },
 ]
 
 function formatDate(v) {
-  return v ? new Date(v).toLocaleString('es-CO') : '—'
+  return formatDateTime(v)
 }
 function typeLabel(t) {
   return { soporte: 'Soporte', requerimiento: 'Requerimiento', error: 'Error' }[t] || t

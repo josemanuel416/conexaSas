@@ -1,4 +1,5 @@
 import PDFDocument from 'pdfkit';
+import { formatDateTimeEs } from './app-timezone.js';
 
 const PAGE_MARGIN = 40;
 const FOOTER_Y = 740;
@@ -11,10 +12,7 @@ function money(value) {
 }
 
 function formatDateTime(value) {
-  if (!value) return '—';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' });
+  return formatDateTimeEs(value, { dateStyle: 'short', timeStyle: 'short' });
 }
 
 function statusLabel(status) {
@@ -200,7 +198,7 @@ export function buildCajaArqueoPdf({ company, session, receipts = [], paymentBal
         .text(session.closingNotes || session.closing_notes, PAGE_MARGIN, y, { width: pageWidth });
     }
 
-    const generated = new Date().toLocaleString('es-CO');
+    const generated = formatDateTimeEs(new Date());
     doc.font('Helvetica').fontSize(7).fillColor('#9E9E9E')
       .text(`Generado ${generated} — Documento interno de arqueo de caja`, PAGE_MARGIN, FOOTER_Y, {
         width: pageWidth,

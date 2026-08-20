@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 dotenv.config();
+process.env.TZ = process.env.TZ || 'America/Bogota';
 
 function required(name) {
   const value = process.env[name];

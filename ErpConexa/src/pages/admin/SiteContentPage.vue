@@ -101,6 +101,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { api } from 'src/services/api.js'
 import CompanyPageHeader from 'src/components/company/CompanyPageHeader.vue'
+import { formatDateTime } from 'src/utils/date-format.js'
 
 const $q = useQuasar()
 const saving = ref(false)
@@ -125,7 +126,7 @@ const form = reactive({
 })
 
 const contactColumns = [
-  { name: 'createdAt', label: 'Fecha', field: 'createdAt', align: 'left', format: (v) => new Date(v).toLocaleString('es-CO') },
+  { name: 'createdAt', label: 'Fecha', field: 'createdAt', align: 'left', format: (v) => formatDateTime(v) },
   { name: 'fullName', label: 'Nombre', field: 'fullName', align: 'left' },
   { name: 'email', label: 'Email', field: 'email', align: 'left' },
   { name: 'status', label: 'Estado', field: 'status', align: 'center' },

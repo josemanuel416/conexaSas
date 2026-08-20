@@ -1,11 +1,12 @@
 <template>
   <q-input
     :model-value="text"
-    :label="label"
+    :label="compact ? void 0 : label"
     outlined
     dense
     inputmode="decimal"
-    :hint="formattedHint"
+    :hide-hint="compact"
+    :hint="compact ? void 0 : formattedHint"
     @update:model-value="onInput"
   />
 </template>
@@ -17,6 +18,7 @@ import { formatCop, parseMoneyInput, sanitizeMoneyInput, moneyInputFromNumber } 
 const props = defineProps({
   modelValue: { type: [Number, String], default: 0 },
   label: { type: String, default: 'Precio' },
+  compact: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue'])

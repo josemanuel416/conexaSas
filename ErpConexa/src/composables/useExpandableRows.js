@@ -22,13 +22,19 @@ export function useExpandableRows(fetchDetail, { onError } = {}) {
   })
 
   function toggleRowExpand(id) {
-    const idx = expanded.value.indexOf(id)
-    if (idx >= 0) expanded.value.splice(idx, 1)
-    else expanded.value.push(id)
+    if (expanded.value.includes(id)) {
+      expanded.value = expanded.value.filter((key) => key !== id)
+    } else {
+      expanded.value = [...expanded.value, id]
+    }
   }
 
   function setExpanded(val) {
     expanded.value = val
+  }
+
+  function invalidateDetail(id) {
+    delete detailCache[id]
   }
 
   return {
@@ -38,5 +44,6 @@ export function useExpandableRows(fetchDetail, { onError } = {}) {
     toggleRowExpand,
     setExpanded,
     loadDetailIfNeeded,
+    invalidateDetail,
   }
 }

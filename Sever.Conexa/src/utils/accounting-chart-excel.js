@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import { todayIsoDate } from './app-timezone.js';
 import {
   getAccountLevel,
   getParentAccountCode,
@@ -244,5 +245,5 @@ export async function exportCurrentChartExcel(accounts = []) {
 }
 
 export function buildChartExportFileName() {
-  return `Plan-contable-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  return `Plan-contable-${todayIsoDate()}.xlsx`;
 }

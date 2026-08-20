@@ -1,5 +1,6 @@
 import PDFDocument from 'pdfkit';
 import { resolveCompanyLogoAbsolute } from './company-logo.js';
+import { formatDateEs as formatDate, formatDateTimeEs, todayIsoDate } from './app-timezone.js';
 
 const PAGE_MARGIN = 40;
 const FOOTER_Y = 740;
@@ -16,14 +17,6 @@ function money(value) {
 function qty(value) {
   const n = Number(value) || 0;
   return Number.isInteger(n) ? String(n) : n.toFixed(4).replace(/\.?0+$/, '');
-}
-
-function formatDate(value) {
-  if (!value) return '—';
-  const raw = String(value);
-  const d = new Date(raw.length === 10 ? `${raw}T12:00:00` : raw);
-  if (Number.isNaN(d.getTime())) return raw.slice(0, 10);
-  return d.toLocaleDateString('es-CO');
 }
 
 function statusLabel(status) {
@@ -184,7 +177,7 @@ function drawSignatureBlock(doc, y, pageWidth) {
 }
 
 function drawFooter(doc, pageWidth, label) {
-  const generated = new Date().toLocaleString('es-CO');
+  const generated = formatDateTimeEs(new Date());
   doc.font('Helvetica').fontSize(7).fillColor('#9E9E9E')
     .text(`Generado ${generated} — ${label}`, PAGE_MARGIN, FOOTER_Y, {
       width: pageWidth,
@@ -193,12 +186,12 @@ function drawFooter(doc, pageWidth, label) {
 }
 
 export function buildMovimientosReportPdfFileName() {
-  const stamp = new Date().toISOString().slice(0, 10);
+  const stamp = todayIsoDate();
   return `Movimientos-inventario-${stamp}.pdf`;
 }
 
 export function buildExistenciasReportPdfFileName() {
-  const stamp = new Date().toISOString().slice(0, 10);
+  const stamp = todayIsoDate();
   return `Existencias-inventario-${stamp}.pdf`;
 }
 

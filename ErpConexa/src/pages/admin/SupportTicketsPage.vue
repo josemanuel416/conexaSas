@@ -75,6 +75,7 @@ import { ref, watch, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { api } from 'src/services/api.js'
 import CompanyPageHeader from 'src/components/company/CompanyPageHeader.vue'
+import { formatDateTime } from 'src/utils/date-format.js'
 
 const $q = useQuasar()
 const loading = ref(false)
@@ -116,7 +117,7 @@ const columns = [
 ]
 
 function formatDate(v) {
-  return v ? new Date(v).toLocaleString('es-CO') : '—'
+  return formatDateTime(v)
 }
 function typeLabel(t) {
   return { soporte: 'Soporte', requerimiento: 'Requerimiento', error: 'Error' }[t] || t

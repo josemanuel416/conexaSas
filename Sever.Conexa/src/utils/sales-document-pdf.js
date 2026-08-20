@@ -1,6 +1,7 @@
 import PDFDocument from 'pdfkit';
 import { resolveCompanyLogoAbsolute } from './company-logo.js';
 import { CONEXASOFT_INVOICE_BRAND } from '../config/conexasoft-brand.js';
+import { formatDateEs as formatDate, formatPrintDateTime } from './app-timezone.js';
 
 const PAGE_MARGIN = 40;
 const STATUS_BAR_H = 18;
@@ -53,31 +54,9 @@ function qty(value) {
   return Number.isInteger(n) ? String(n) : n.toFixed(4).replace(/\.?0+$/, '');
 }
 
-function formatDate(value) {
-  if (!value) return '—';
-  const raw = String(value);
-  const d = new Date(raw.length === 10 ? `${raw}T12:00:00` : raw);
-  if (Number.isNaN(d.getTime())) return raw.slice(0, 10);
-  return d.toLocaleDateString('es-CO');
-}
-
 function documentTitle(kind) {
   if (kind === 'prefactura') return 'PREFACTURA';
   return 'COTIZACIÓN';
-}
-
-function formatPrintDateTime(value = new Date()) {
-  const d = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString('es-CO', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true,
-  });
 }
 
 function userCode(user) {
@@ -104,6 +83,25 @@ function ensureSpace(doc, y, needed = 40) {
     return PAGE_MARGIN;
   }
   return y;
+}
+
+function drawBox(doc, x, y, w, h, fill, borderColor, radius = 3) {
+  doc.save();
+  if (fill) doc.roundedRect(x, y, w, h, radius).fill(fill);
+  doc.roundedRect(x, y, w, h, radius).lineWidth(0.8).strokeColor(borderColor).stroke();
+  doc.restore();
+}
+
+function strokeTableSegment(doc, x, y, w, h, brand, { roundTop = true, roundBottom = true } = {}) {
+  if (h <= 0) return;
+  doc.save();
+  doc.lineWidth(0.8).strokeColor(brand.border);
+  if (roundTop && roundBottom) {
+    doc.roundedRect(x, y, w, h, 3).stroke();
+  } else {
+    doc.rect(x, y, w, h).stroke();
+  }
+  doc.restore();
 }
 
 function drawCompanyHeader(doc, company, title, pageWidth, brand) {
@@ -186,33 +184,104 @@ function drawInfoCard(doc, y, pageWidth, fields, brand) {
   return y + cardH + 12;
 }
 
+function tableCellAlign(index, columnCount) {
+  if (index === 0 || index === 3) return 'center';
+  if (index >= columnCount - 3) return 'right';
+  return 'left';
+}
+
 function drawTableHeader(doc, y, headers, colDefs, pageWidth, brand) {
   const cols = scaleCols(colDefs, pageWidth);
   doc.save();
   doc.rect(PAGE_MARGIN, y, pageWidth, 18).fill(brand.tableHead);
+  doc.moveTo(PAGE_MARGIN, y + 18).lineTo(PAGE_MARGIN + pageWidth, y + 18)
+    .strokeColor(brand.border).lineWidth(0.5).stroke();
   doc.restore();
   let x = PAGE_MARGIN + 4;
   headers.forEach((h, i) => {
     doc.font('Helvetica-Bold').fontSize(8).fillColor(brand.secondary)
-      .text(h, x, y + 5, { width: cols[i] - 6 });
+      .text(h, x, y + 5, { width: cols[i] - 6, align: tableCellAlign(i, headers.length) });
     x += cols[i];
   });
   return { y: y + 18, cols };
 }
 
-function drawTableRow(doc, y, values, cols, pageWidth, { stripe = false } = {}) {
+function measureTableRow(doc, values, cols) {
+  doc.font('Helvetica').fontSize(8);
+  let maxH = 10;
+  values.forEach((val, i) => {
+    const h = doc.heightOfString(String(val ?? '—'), {
+      width: cols[i] - 6,
+      align: tableCellAlign(i, values.length),
+    });
+    maxH = Math.max(maxH, h);
+  });
+  return maxH + 8;
+}
+
+function drawTableRow(doc, y, values, cols, pageWidth, brand, { stripe = false } = {}) {
+  const rowH = measureTableRow(doc, values, cols);
   if (stripe) {
     doc.save();
-    doc.rect(PAGE_MARGIN, y, pageWidth, 16).fill('#FAFAFA');
+    doc.rect(PAGE_MARGIN, y, pageWidth, rowH).fill('#FAFAFA');
     doc.restore();
   }
   let x = PAGE_MARGIN + 4;
   values.forEach((val, i) => {
     doc.font('Helvetica').fontSize(8).fillColor('#212121')
-      .text(String(val ?? '—'), x, y + 4, { width: cols[i] - 6, align: i >= values.length - 2 ? 'right' : 'left' });
+      .text(String(val ?? '—'), x, y + 4, {
+        width: cols[i] - 6,
+        align: tableCellAlign(i, values.length),
+        lineBreak: true,
+      });
     x += cols[i];
   });
-  return y + 16;
+  doc.moveTo(PAGE_MARGIN, y + rowH).lineTo(PAGE_MARGIN + pageWidth, y + rowH)
+    .strokeColor(brand.border).lineWidth(0.5).stroke();
+  return y + rowH;
+}
+
+function drawTotalsAndNotes(doc, y, pageWidth, brand, totals, notes) {
+  const gap = 12;
+  const totalsW = 220;
+  const totalsH = 62;
+  const totalsX = PAGE_MARGIN + pageWidth - totalsW;
+  const notesText = notes?.trim() || '';
+  const notesX = PAGE_MARGIN;
+  const notesW = totalsX - PAGE_MARGIN - gap;
+
+  let sectionH = totalsH;
+
+  if (notesText) {
+    doc.font('Helvetica').fontSize(9);
+    const bodyH = doc.heightOfString(notesText, { width: notesW - 20 });
+    const notesInnerH = 22 + bodyH + 10;
+    sectionH = Math.max(totalsH, notesInnerH);
+
+    drawBox(doc, notesX, y, notesW, sectionH, brand.lightFill, brand.border);
+    doc.font('Helvetica-Bold').fontSize(9).fillColor('#616161')
+      .text('Observaciones', notesX + 10, y + 8, { width: notesW - 20 });
+    doc.font('Helvetica').fontSize(9).fillColor('#424242')
+      .text(notesText, notesX + 10, y + 22, { width: notesW - 20 });
+  }
+
+  drawBox(doc, totalsX, y, totalsW, totalsH, brand.lightFill, brand.border);
+  const rows = [
+    { label: 'Subtotal', value: `$${money(totals.subtotal)}`, bold: false },
+    { label: 'IVA', value: `$${money(totals.taxAmount)}`, bold: false },
+    { label: 'TOTAL', value: `$${money(totals.total)}`, bold: true },
+  ];
+  let ty = y + 8;
+  rows.forEach((row) => {
+    doc.font(row.bold ? 'Helvetica-Bold' : 'Helvetica')
+      .fontSize(row.bold ? 10 : 9)
+      .fillColor(row.bold ? brand.primary : '#424242')
+      .text(row.label, totalsX + 10, ty, { width: 90 })
+      .text(row.value, totalsX + 100, ty, { width: totalsW - 110, align: 'right' });
+    ty += row.bold ? 18 : 14;
+  });
+
+  return y + sectionH + 12;
 }
 
 function drawSignatureBlock(doc, y, pageWidth, brand, preparedBy) {
@@ -311,51 +380,53 @@ export function buildSalesDocumentPdf({ company, document, client, preparedBy = 
     y = drawInfoCard(doc, y, pageWidth, fields, brand);
 
     const details = document.details || [];
-    doc.font('Helvetica-Bold').fontSize(10).fillColor(brand.primary)
-      .text(`Detalle (${details.length} ${details.length === 1 ? 'línea' : 'líneas'})`, PAGE_MARGIN, y);
-    y += 14;
 
-    const colDefs = [70, 200, 50, 80, 60, 80];
-    const headers = ['Código', 'Descripción', 'Cant.', 'Precio', 'IVA %', 'Total'];
-    const { y: tableY, cols } = drawTableHeader(doc, y, headers, colDefs, pageWidth, brand);
+    const colDefs = [24, 62, 188, 46, 72, 52, 76];
+    const headers = ['#', 'Código', 'Descripción', 'Cant.', 'Precio', 'IVA %', 'Total'];
+
+    let segmentTop = y;
+    let firstSegment = true;
+    let { y: tableY, cols } = drawTableHeader(doc, y, headers, colDefs, pageWidth, brand);
     y = tableY;
 
     details.forEach((line, idx) => {
-      y = ensureSpace(doc, y, 18);
-      y = drawTableRow(doc, y, [
+      const values = [
+        String(line.lineNumber ?? idx + 1),
         line.itemCode || '—',
         line.description || '—',
         qty(line.quantity),
         `$${money(line.unitPrice)}`,
         `${Number(line.taxRate) || 0}%`,
         `$${money(line.lineTotal)}`,
-      ], cols, pageWidth, { stripe: idx % 2 === 1 });
+      ];
+      const rowH = measureTableRow(doc, values, cols);
+      if (y + rowH > FOOTER_Y) {
+        strokeTableSegment(doc, PAGE_MARGIN, segmentTop, pageWidth, y - segmentTop, brand, {
+          roundTop: firstSegment,
+          roundBottom: false,
+        });
+        doc.addPage();
+        firstSegment = false;
+        segmentTop = PAGE_MARGIN;
+        ({ y, cols } = drawTableHeader(doc, segmentTop, headers, colDefs, pageWidth, brand));
+      }
+      y = drawTableRow(doc, y, values, cols, pageWidth, brand, { stripe: idx % 2 === 1 });
     });
 
-    y = ensureSpace(doc, y, 50);
-    const summaryX = PAGE_MARGIN + pageWidth - 220;
-    doc.font('Helvetica').fontSize(9).fillColor('#424242');
-    doc.text('Subtotal:', summaryX, y, { width: 100, align: 'right' });
-    doc.text(`$${money(document.subtotal)}`, summaryX + 105, y, { width: 80, align: 'right' });
-    y += 14;
-    doc.text('IVA:', summaryX, y, { width: 100, align: 'right' });
-    doc.text(`$${money(document.taxAmount)}`, summaryX + 105, y, { width: 80, align: 'right' });
-    y += 16;
-    doc.font('Helvetica-Bold').fontSize(11).fillColor(brand.primary);
-    doc.text('TOTAL:', summaryX, y, { width: 100, align: 'right' });
-    doc.text(`$${money(document.total)}`, summaryX + 105, y, { width: 80, align: 'right' });
+    strokeTableSegment(doc, PAGE_MARGIN, segmentTop, pageWidth, y - segmentTop, brand, {
+      roundTop: firstSegment,
+      roundBottom: true,
+    });
+    y += 10;
 
-    if (document.notes?.trim()) {
-      y += 28;
-      y = ensureSpace(doc, y, 40);
-      doc.font('Helvetica-Bold').fontSize(9).fillColor('#616161').text('Observaciones', PAGE_MARGIN, y);
-      y += 12;
-      doc.font('Helvetica').fontSize(9).fillColor('#424242')
-        .text(document.notes.trim(), PAGE_MARGIN, y, { width: pageWidth });
-      y = doc.y + 8;
-    } else {
-      y += 28;
-    }
+    y = ensureSpace(doc, y, 70);
+    y = drawTotalsAndNotes(doc, y, pageWidth, brand, {
+      subtotal: document.subtotal,
+      taxAmount: document.taxAmount,
+      total: document.total,
+    }, document.notes);
+
+    y += 16;
 
     y = ensureSpace(doc, y, SIGNATURE_H + 12);
     drawSignatureBlock(doc, y, pageWidth, brand, preparedBy);

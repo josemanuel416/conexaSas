@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { DOMParser, XMLSerializer } = require('@xmldom/xmldom');
 const crypto = require('crypto');
+const { nowAppTimezoneParts } = require('../utils/app-timezone');
 require('dotenv').config();
 
 const CERT_PASS = process.env.CERT_PASS || '';
@@ -239,10 +240,8 @@ function getSigningTimeFromDoc(doc) {
     }
     return `${issueDate}T${issueTime}-05:00`;
   }
-  const now = new Date();
-  const bogota = new Date(now.toLocaleString('en-US', { timeZone: 'America/Bogota' }));
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${bogota.getFullYear()}-${pad(bogota.getMonth() + 1)}-${pad(bogota.getDate())}T${pad(bogota.getHours())}:${pad(bogota.getMinutes())}:${pad(bogota.getSeconds())}-05:00`;
+  const { date, time } = nowAppTimezoneParts();
+  return `${date}T${time}`;
 }
 
 async function signXML(xmlString, companyConfig = null) {

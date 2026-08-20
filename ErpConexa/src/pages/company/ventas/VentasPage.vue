@@ -18,7 +18,7 @@
       </div>
 
       <q-table
-        :expanded="expanded"
+        v-model:expanded="expanded"
         class="company-data-table"
         :rows="currentDocuments"
         :columns="tableColumns(tab)"
@@ -27,7 +27,6 @@
         bordered
         :loading="loading"
         :pagination="{ rowsPerPage: 10 }"
-        @update:expanded="setExpanded"
         @row-click="(_, row) => toggleRowExpand(row.id)"
       >
         <template #no-data>
@@ -116,7 +115,7 @@
               </div>
             </q-td>
             <q-td key="expand" auto-width class="company-data-table__expand-toggle" @click.stop="toggleRowExpand(props.row.id)">
-              <q-btn flat dense round size="sm" :icon="props.expand ? 'expand_less' : 'expand_more'" color="grey-7" />
+              <q-btn flat dense round size="sm" :icon="expanded.includes(props.row.id) ? 'expand_less' : 'expand_more'" color="grey-7" />
             </q-td>
             <q-td key="internalNumber" :props="props">{{ props.row.internalNumber }}</q-td>
             <q-td key="issueDate" :props="props">{{ formatDate(props.row.issueDate) }}</q-td>
@@ -131,13 +130,18 @@
               </q-badge>
             </q-td>
           </q-tr>
-          <q-tr v-show="props.expand" :props="props" class="company-data-table__expand">
+          <q-tr v-show="expanded.includes(props.row.id)" :props="props" class="company-data-table__expand">
             <q-td colspan="100%">
-              <div class="company-data-table__expand-inner">
-                <DocumentExpandPanel
+              <div class="company-data-table__expand-inner company-data-table__expand-inner--sales">
+                <SalesDocumentExpandPanel
                   :row="props.row"
                   :detail="detailCache[props.row.id]"
                   :loading="detailLoading[props.row.id]"
+                  :editable="canEditDocument(props.row)"
+                  :saving="expandSaving === props.row.id"
+                  :services="services"
+                  :articles="articles"
+                  @save="(payload) => saveExpandedDocument(props.row, payload)"
                 />
               </div>
             </q-td>
@@ -184,110 +188,14 @@
         />
       </div>
 
-      <div v-if="docForm.kind === 'cotizacion'" class="q-mb-md">
-        <div class="text-caption text-grey-7 q-mb-xs">Tipo de ítems</div>
-        <q-option-group
-          v-model="lineItemMode"
-          :options="lineItemModeOptions"
-          type="radio"
-          inline
-          dense
-        />
-      </div>
-
-      <div class="sales-doc-section-title">
-        <q-icon name="list_alt" size="xs" class="q-mr-xs" /> {{ detailSectionTitle }}
-      </div>
-
-      <div class="sales-doc-lines" :class="{ 'sales-doc-lines--with-type': showLineTypeColumn }">
-        <div class="sales-doc-lines__head">
-          <span v-if="showLineTypeColumn">Tipo</span>
-          <span>{{ lineItemColumnLabel }}</span>
-          <span>Cant.</span>
-          <span>Precio unit.</span>
-          <span>IVA %</span>
-          <span class="text-right">Subtotal</span>
-          <span></span>
-        </div>
-        <div v-for="(line, idx) in docForm.lines" :key="idx" class="sales-doc-lines__row">
-          <div v-if="showLineTypeColumn" class="col-type">
-            <q-select
-              v-model="line.lineType"
-              :options="lineTypeOptions"
-              dense
-              outlined
-              emit-value
-              map-options
-              hide-bottom-space
-              options-dense
-              @update:model-value="onLineTypeChange(line)"
-            />
-          </div>
-          <div class="col-service">
-            <q-select
-              v-if="effectiveLineType(line) === 'service'"
-              v-model="line.serviceId"
-              :options="serviceOptions"
-              dense
-              outlined
-              emit-value
-              map-options
-              hide-bottom-space
-              options-dense
-              @update:model-value="(v) => onServicePick(line, v)"
-            />
-            <q-select
-              v-else
-              v-model="line.articleId"
-              :options="articleOptions"
-              dense
-              outlined
-              emit-value
-              map-options
-              hide-bottom-space
-              options-dense
-              @update:model-value="(v) => onArticlePick(line, v)"
-            />
-          </div>
-          <q-input
-            v-model.number="line.quantity"
-            type="number"
-            dense
-            outlined
-            min="1"
-            hide-bottom-space
-          />
-          <MoneyInput v-model="line.unitPrice" label="Precio" />
-          <q-input
-            v-model.number="line.taxRate"
-            type="number"
-            dense
-            outlined
-            min="0"
-            hide-bottom-space
-          />
-          <div class="sales-doc-lines__subtotal">${{ formatMoney(lineCalc(line).lineTotal) }}</div>
-          <div class="col-actions">
-            <q-btn
-              flat
-              dense
-              round
-              icon="delete"
-              color="negative"
-              :disable="docForm.lines.length === 1"
-              @click="docForm.lines.splice(idx, 1)"
-            />
-          </div>
-        </div>
-      </div>
-
-      <q-btn
-        flat
-        icon="add"
-        label="Agregar línea"
-        color="primary"
-        class="q-mt-sm"
-        @click="addLine"
+      <SalesDocumentLinesEditor
+        :lines="docForm.lines"
+        :document-kind="docForm.kind"
+        :line-item-mode="lineItemMode"
+        :services="services"
+        :articles="articles"
+        @update:lines="onDocLinesUpdate"
+        @update:line-item-mode="lineItemMode = $event"
       />
 
       <div class="sales-doc-summary">
@@ -456,9 +364,17 @@ import { useQuasar } from 'quasar'
 import { api } from 'src/services/api.js'
 import CompanyFormDialog from 'src/components/company/CompanyFormDialog.vue'
 import CompanyPageHeader from 'src/components/company/CompanyPageHeader.vue'
-import DocumentExpandPanel from 'src/components/company/DocumentExpandPanel.vue'
-import MoneyInput from 'src/components/company/MoneyInput.vue'
+import SalesDocumentExpandPanel from 'src/components/company/SalesDocumentExpandPanel.vue'
+import SalesDocumentLinesEditor from 'src/components/company/SalesDocumentLinesEditor.vue'
 import SalesDocumentPdfDialog from 'src/components/company/SalesDocumentPdfDialog.vue'
+import {
+  inferLineItemMode,
+  emptyLine,
+  mapDetailToLine,
+  calcDocumentTotals,
+  buildLinePayload,
+  validateDocumentLines,
+} from 'src/utils/sales-document-lines.js'
 import { useCompanyPageTab } from 'src/composables/useCompanyPageTab.js'
 import { useExpandableRows } from 'src/composables/useExpandableRows.js'
 import { formatDate } from 'src/utils/date-format.js'
@@ -489,7 +405,8 @@ const {
   detailCache,
   detailLoading,
   toggleRowExpand,
-  setExpanded,
+  loadDetailIfNeeded,
+  invalidateDetail,
 } = useExpandableRows((id) => api.ventas.document(id), {
   onError: (e) => $q.notify({ type: 'negative', message: e.message }),
 })
@@ -498,6 +415,7 @@ const currentDocuments = computed(() =>
   documentsByKind(tab.value === 'cotizaciones' ? 'cotizacion' : 'prefactura')
 )
 
+const expandSaving = ref(null)
 const loading = ref(false)
 const saving = ref(false)
 const documents = ref([])
@@ -507,17 +425,6 @@ const articles = ref([])
 const resolutions = ref([])
 
 const lineItemMode = ref('servicios')
-
-const lineItemModeOptions = [
-  { label: 'Servicios', value: 'servicios' },
-  { label: 'Artículos', value: 'articulos' },
-  { label: 'Ambos', value: 'ambos' },
-]
-
-const lineTypeOptions = [
-  { label: 'Servicio', value: 'service' },
-  { label: 'Artículo', value: 'article' },
-]
 
 const docDialog = ref(false)
 const convertDialog = ref(false)
@@ -570,42 +477,6 @@ function tableColumns(kind) {
 }
 
 const clientOptions = ref([])
-const serviceOptions = computed(() =>
-  services.value
-    .filter((s) => s.isActive)
-    .map((s) => ({
-      label: `${s.code} — ${s.description}`,
-      value: s.id,
-      caption: `$${formatMoney(s.basePrice)}`,
-    }))
-)
-
-const articleOptions = computed(() =>
-  articles.value
-    .filter((a) => a.isActive)
-    .map((a) => ({
-      label: `${a.code} — ${a.name}`,
-      value: a.id,
-      caption: `$${formatMoney(a.averageCost)}`,
-    }))
-)
-
-const showLineTypeColumn = computed(() =>
-  docForm.kind === 'cotizacion' && lineItemMode.value === 'ambos'
-)
-
-const detailSectionTitle = computed(() => {
-  if (docForm.kind !== 'cotizacion') return 'Detalle de servicios'
-  if (lineItemMode.value === 'articulos') return 'Detalle de artículos'
-  if (lineItemMode.value === 'ambos') return 'Detalle de ítems'
-  return 'Detalle de servicios'
-})
-
-const lineItemColumnLabel = computed(() => {
-  if (docForm.kind !== 'cotizacion' || lineItemMode.value === 'servicios') return 'Servicio'
-  if (lineItemMode.value === 'articulos') return 'Artículo'
-  return 'Ítem'
-})
 
 const invoiceResolutionOptions = computed(() =>
   resolutions.value
@@ -625,22 +496,7 @@ const viewTitle = computed(() =>
   selectedDoc.value?.documentKind === 'cotizacion' ? 'Cotización' : 'Prefactura'
 )
 
-const docTotals = computed(() => {
-  let base = 0
-  let tax = 0
-  let total = 0
-  for (const line of docForm.lines) {
-    const calc = lineCalc(line)
-    base += calc.base
-    tax += calc.taxAmount
-    total += calc.lineTotal
-  }
-  return {
-    base: Math.round(base * 100) / 100,
-    tax: Math.round(tax * 100) / 100,
-    total: Math.round(total * 100) / 100,
-  }
-})
+const docTotals = computed(() => calcDocumentTotals(docForm.lines))
 
 watch(tab, () => {
   expanded.value = []
@@ -658,11 +514,8 @@ watch(lineItemMode, (mode) => {
 
 onMounted(loadAll)
 
-function lineCalc(line) {
-  const base = (Number(line.quantity) || 0) * (Number(line.unitPrice) || 0)
-  const taxAmount = base * ((Number(line.taxRate) || 0) / 100)
-  const lineTotal = Math.round((base + taxAmount) * 100) / 100
-  return { base, taxAmount, lineTotal }
+function onDocLinesUpdate(lines) {
+  docForm.lines.splice(0, docForm.lines.length, ...lines)
 }
 
 function documentsByKind(kind) {
@@ -711,52 +564,6 @@ function defaultDueDate() {
   return date.toISOString().slice(0, 10)
 }
 
-function emptyLine(lineType = 'service') {
-  return {
-    lineType,
-    serviceId: null,
-    articleId: null,
-    itemCode: '',
-    description: '',
-    quantity: 1,
-    unitPrice: 0,
-    taxRate: 19,
-  }
-}
-
-function inferLineItemMode(lines) {
-  if (!lines?.length) return 'servicios'
-  const hasService = lines.some((l) => l.serviceId)
-  const hasArticle = lines.some((l) => !l.serviceId)
-  if (hasService && hasArticle) return 'ambos'
-  if (hasArticle) return 'articulos'
-  return 'servicios'
-}
-
-function mapDetailToLine(d) {
-  const isArticle = !d.serviceId
-  const article = isArticle
-    ? articles.value.find((a) => a.code === d.itemCode)
-    : null
-  return {
-    lineType: isArticle ? 'article' : 'service',
-    serviceId: d.serviceId || null,
-    articleId: article?.id || null,
-    itemCode: d.itemCode || '',
-    description: d.description || '',
-    quantity: d.quantity,
-    unitPrice: d.unitPrice,
-    taxRate: d.taxRate,
-  }
-}
-
-function effectiveLineType(line) {
-  if (docForm.kind !== 'cotizacion') return 'service'
-  if (lineItemMode.value === 'articulos') return 'article'
-  if (lineItemMode.value === 'servicios') return 'service'
-  return line.lineType || 'service'
-}
-
 function openDocumentDialog(kind, row = null) {
   docSaveError.value = ''
   docForm.kind = kind
@@ -765,7 +572,7 @@ function openDocumentDialog(kind, row = null) {
   docForm.dueDate = row?.dueDate?.slice?.(0, 10) || defaultDueDate()
   docForm.notes = row?.notes || ''
   if (row?.details?.length) {
-    docForm.lines = row.details.map(mapDetailToLine)
+    docForm.lines = row.details.map((d) => mapDetailToLine(d, articles.value))
     lineItemMode.value = kind === 'cotizacion' ? inferLineItemMode(row.details) : 'servicios'
   } else {
     lineItemMode.value = kind === 'cotizacion' ? 'servicios' : 'servicios'
@@ -792,77 +599,38 @@ async function viewDocument(row) {
   }
 }
 
-function addLine() {
-  let lineType = 'service'
-  if (docForm.kind === 'cotizacion') {
-    if (lineItemMode.value === 'articulos') lineType = 'article'
-    else if (lineItemMode.value === 'ambos') lineType = 'service'
-  }
-  docForm.lines.push(emptyLine(lineType))
-}
-
-function onServicePick(line, serviceId) {
-  const svc = services.value.find((s) => s.id === serviceId)
-  if (svc) {
-    line.unitPrice = svc.basePrice
-    line.articleId = null
-    line.itemCode = ''
-    line.description = ''
-  }
-}
-
-function onArticlePick(line, articleId) {
-  const art = articles.value.find((a) => a.id === articleId)
-  if (art) {
-    line.itemCode = art.code
-    line.description = art.name
-    line.unitPrice = art.averageCost || 0
-    line.serviceId = null
-  }
-}
-
-function onLineTypeChange(line) {
-  if (line.lineType === 'service') {
-    line.articleId = null
-    line.itemCode = ''
-    line.description = ''
-  } else {
-    line.serviceId = null
-  }
-  line.unitPrice = 0
-}
-
 function validateDocumentForm() {
   const missing = []
   if (!docForm.clientId) missing.push('Cliente')
-  if (!docForm.lines.length) missing.push('Al menos una línea')
-  for (let i = 0; i < docForm.lines.length; i += 1) {
-    const line = docForm.lines[i]
-    const type = effectiveLineType(line)
-    if (type === 'service' && !line.serviceId) missing.push(`Servicio en línea ${i + 1}`)
-    if (type === 'article' && !line.articleId) missing.push(`Artículo en línea ${i + 1}`)
-    if (!line.quantity || line.quantity <= 0) missing.push(`Cantidad en línea ${i + 1}`)
-  }
+  missing.push(...validateDocumentLines(docForm.lines, docForm.kind, lineItemMode.value))
   return missing
 }
 
-function buildLinePayload(line) {
-  const type = effectiveLineType(line)
-  if (type === 'article') {
-    return {
-      articleId: line.articleId,
-      itemCode: line.itemCode,
-      description: line.description,
-      quantity: line.quantity,
-      unitPrice: line.unitPrice,
-      taxRate: line.taxRate,
-    }
+async function saveExpandedDocument(row, { lines, lineItemMode: mode }) {
+  const detail = detailCache[row.id]
+  if (!detail) return
+  const missing = validateDocumentLines(lines, detail.documentKind, mode)
+  if (missing.length) {
+    $q.notify({ type: 'warning', message: `Complete: ${missing.join(', ')}` })
+    return
   }
-  return {
-    serviceId: line.serviceId,
-    quantity: line.quantity,
-    unitPrice: line.unitPrice,
-    taxRate: line.taxRate,
+  expandSaving.value = row.id
+  try {
+    await api.ventas.updateDocument(row.id, {
+      kind: detail.documentKind,
+      clientId: detail.clientId,
+      dueDate: detail.dueDate?.slice?.(0, 10),
+      notes: detail.notes || '',
+      lines: lines.map((line) => buildLinePayload(line, detail.documentKind, mode)),
+    })
+    invalidateDetail(row.id)
+    await loadDetailIfNeeded(row.id)
+    await loadAll()
+    $q.notify({ type: 'positive', message: 'Ítems actualizados' })
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e.message })
+  } finally {
+    expandSaving.value = null
   }
 }
 
@@ -879,7 +647,7 @@ async function saveDocument(emit) {
       clientId: docForm.clientId,
       dueDate: docForm.dueDate,
       notes: docForm.notes,
-      lines: docForm.lines.map(buildLinePayload),
+      lines: docForm.lines.map((line) => buildLinePayload(line, docForm.kind, lineItemMode.value)),
       emit,
     }
     if (docId.value) {

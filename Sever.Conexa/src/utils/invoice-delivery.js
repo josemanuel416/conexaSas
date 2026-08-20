@@ -13,6 +13,7 @@ import { formatCompanyDian } from './dian-readiness.js';
 import { formatClient } from './client-format.js';
 import { signXmlWithFePos } from './fepos-client.js';
 import { buildInvoicePdf, buildInvoicePdfFileName } from './invoice-pdf.js';
+import { yearFromDateValue } from './app-timezone.js';
 import { createZipBuffer } from './zip-buffer.js';
 
 function formatResolution(row) {
@@ -53,9 +54,7 @@ async function resolveAttachedDocumentFileName(submission, companyRow, companyDi
 
   let fileName = attachedDocumentFileNameFromZip(submission.zip_file_name);
   if (!fileName) {
-    const issueYear = invoice.issueDate
-      ? new Date(invoice.issueDate).getFullYear()
-      : new Date().getFullYear();
+    const issueYear = yearFromDateValue(invoice.issueDate);
     const sequence = await nextDianFileSequence(pool, companyRow.id, 'ad', issueYear);
     fileName = buildDianAttachedDocumentFileName({
       nit: companyDian.nit,

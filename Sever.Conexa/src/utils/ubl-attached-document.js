@@ -1,6 +1,7 @@
 /** Generador UBL AttachedDocument (contenedor factura + ApplicationResponse DIAN) */
 
 import crypto from 'crypto';
+import { nowAppTimezoneParts } from './app-timezone.js';
 
 function escapeXml(value) {
   return String(value ?? '')
@@ -36,13 +37,8 @@ function profileExecutionId(environment) {
 }
 
 function nowBogota() {
-  const now = new Date();
-  const bogota = new Date(now.toLocaleString('en-US', { timeZone: 'America/Bogota' }));
-  const pad = (n) => String(n).padStart(2, '0');
-  return {
-    date: `${bogota.getFullYear()}-${pad(bogota.getMonth() + 1)}-${pad(bogota.getDate())}`,
-    time: `${pad(bogota.getHours())}:${pad(bogota.getMinutes())}:${pad(bogota.getSeconds())}-05:00`,
-  };
+  const { date, time } = nowAppTimezoneParts();
+  return { date, time };
 }
 
 /** Embebe XML literal en CDATA, como en ejemplos DIAN reales. */

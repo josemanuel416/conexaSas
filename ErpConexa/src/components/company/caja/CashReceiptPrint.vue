@@ -54,6 +54,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { formatDate } from 'src/utils/date-format.js'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -69,16 +70,6 @@ watch(visible, (v) => emit('update:modelValue', v))
 
 function formatMoney(v) {
   return Number(v || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })
-}
-
-function formatDate(d) {
-  if (!d) return '—'
-  const match = String(d).match(/^(\d{4}-\d{2}-\d{2})/)
-  if (match) {
-    return new Date(`${match[1]}T12:00:00`).toLocaleDateString('es-CO')
-  }
-  const date = new Date(d)
-  return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString('es-CO')
 }
 
 function doPrint() {

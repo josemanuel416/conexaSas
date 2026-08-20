@@ -721,6 +721,7 @@ import { useCompanyPageTab } from 'src/composables/useCompanyPageTab.js'
 import { documentTypeLabel, defaultTaxLevel } from 'src/utils/dian-client.js'
 import { calcNitVerificationDigit } from 'src/utils/nit-dv.js'
 import { dianEnvironmentLabel, dianEnvironmentHint } from 'src/utils/dian-environment.js'
+import { formatDate } from 'src/utils/date-format.js'
 
 const $q = useQuasar()
 
@@ -1097,8 +1098,7 @@ async function saveDianConfig() {
 }
 
 function formatCertDate(value) {
-  if (!value) return '—'
-  return new Date(value).toLocaleDateString('es-CO')
+  return formatDate(value)
 }
 
 async function uploadCertificate() {

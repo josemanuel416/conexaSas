@@ -1,5 +1,7 @@
 /** Nomenclatura DIAN anexo técnico — adnnnnnnnnnnpppaadddddddd.xml */
 
+import { currentYear } from './app-timezone.js';
+
 export function padDianNit(nit) {
   const digits = String(nit || '').replace(/\D/g, '');
   return digits.slice(-10).padStart(10, '0');
@@ -20,7 +22,7 @@ export function buildDianAttachedDocumentFileName({
 }) {
   const paddedNit = padDianNit(nit);
   const ppp = normalizeAssignmentCode(assignmentCode);
-  const yy = String(year ?? new Date().getFullYear()).slice(-2);
+  const yy = String(year ?? currentYear()).slice(-2);
   const seq = Number(sequence);
   if (!Number.isFinite(seq) || seq < 1 || seq > 0xFFFFFFFF) {
     throw new Error('Consecutivo DIAN inválido para AttachedDocument');

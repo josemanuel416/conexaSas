@@ -603,6 +603,7 @@ import CashReceiptPrint from 'src/components/company/caja/CashReceiptPrint.vue'
 import CajaArqueoPdfDialog from 'src/components/company/caja/CajaArqueoPdfDialog.vue'
 import ClientFormFields from 'src/components/company/ClientFormFields.vue'
 import { useCompanyPageTab } from 'src/composables/useCompanyPageTab.js'
+import { formatDateTime } from 'src/utils/date-format.js'
 
 const $q = useQuasar()
 
@@ -1353,11 +1354,6 @@ async function printReceipt(row) {
 
 function formatMoney(v) {
   return Number(v || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })
-}
-
-function formatDateTime(v) {
-  if (!v) return '—'
-  return new Date(v).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })
 }
 
 function differenceClass(v) {

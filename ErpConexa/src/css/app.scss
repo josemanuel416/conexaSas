@@ -284,6 +284,24 @@
   padding: 10px 12px;
 }
 
+.sales-doc-lines--compact .sales-doc-lines__head,
+.sales-doc-lines--compact .sales-doc-lines__row {
+  align-items: center;
+}
+
+.sales-doc-lines--compact .sales-doc-lines__row .col-actions,
+.sales-doc-lines--compact .sales-doc-lines__row .sales-doc-lines__subtotal {
+  align-self: center;
+}
+
+.sales-doc-lines--compact .sales-doc-lines__row .q-field--with-bottom {
+  padding-bottom: 0;
+}
+
+.sales-doc-lines--compact .sales-doc-lines__row .q-field__bottom {
+  display: none;
+}
+
 .sales-doc-lines__head {
   background: #f0f4f8;
   font-size: 0.75rem;
@@ -299,6 +317,12 @@
 
 .sales-doc-lines__row .q-field {
   min-width: 0;
+}
+
+.sales-doc-lines__row .col-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .sales-doc-lines__subtotal {
@@ -341,7 +365,18 @@
 
 .sales-doc-lines--with-type .sales-doc-lines__head,
 .sales-doc-lines--with-type .sales-doc-lines__row {
-  grid-template-columns: 100px minmax(240px, 2.2fr) 90px 150px 90px 130px 44px;
+  grid-template-columns: 128px minmax(220px, 2fr) 76px 120px 76px 108px 36px;
+}
+
+.sales-doc-lines--with-type.sales-doc-lines--compact .sales-doc-lines__head,
+.sales-doc-lines--with-type.sales-doc-lines--compact .sales-doc-lines__row {
+  grid-template-columns: 128px minmax(200px, 2.2fr) 72px 112px 72px 100px 32px;
+  gap: 8px 10px;
+  padding: 8px 10px;
+}
+
+.sales-doc-lines--with-type .col-type .q-field__control-container {
+  padding-top: 0;
 }
 
 @media (max-width: 1023px) {
@@ -734,8 +769,17 @@
   padding: 12px 16px 16px 56px;
 }
 
+.company-data-table__expand-inner--sales {
+  padding: 12px 12px 16px 8px;
+}
+
 .company-data-table__expand-lines {
   max-width: 720px;
+}
+
+.company-data-table__expand-lines--wide {
+  max-width: none;
+  width: 100%;
 }
 
 .company-data-table__expand-toggle {
