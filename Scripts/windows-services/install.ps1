@@ -9,11 +9,20 @@
 #
 param(
     [ValidateSet('Install', 'Uninstall', 'Status', 'Start', 'Stop', 'Restart')]
-    [string]$Action = 'Install'
+    [string]$Action = 'Install',
+    [string]$DeployRoot = ''
 )
 
 $ErrorActionPreference = 'Stop'
-$Root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$Beside = Split-Path $PSScriptRoot
+$RepoRoot = Split-Path -Parent $Beside
+if ($DeployRoot) {
+    $Root = $DeployRoot
+} elseif (Test-Path (Join-Path $Beside 'api')) {
+    $Root = $Beside
+} else {
+    $Root = $RepoRoot
+}
 $ToolsDir = Join-Path $PSScriptRoot 'tools'
 $NssmDir = Join-Path $ToolsDir 'nssm'
 $LogDir = Join-Path $PSScriptRoot 'logs'
@@ -62,6 +71,14 @@ function Get-NssmExe {
     Expand-Archive -Path $zipPath -DestinationPath $NssmDir -Force
     Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
 
+    $extracted = Get-ChildItem -Path $NssmDir -Recurse -Filter 'nssm.exe' -ErrorAction SilentlyContinue |
+        Where-Object { $_.DirectoryName -match '\\win64$' } |
+        Select-Object -First 1
+    if ($extracted) {
+        New-Item -ItemType Directory -Force -Path (Split-Path $local) | Out-Null
+        Copy-Item $extracted.FullName $local -Force
+    }
+
     if (-not (Test-Path $local)) {
         throw "No se encontró nssm.exe en $local"
     }
@@ -69,15 +86,19 @@ function Get-NssmExe {
 }
 
 function Get-ServiceDefinitions($nodeExe) {
-    $apiPort = Get-ProjectPort (Join-Path $Root 'Sever.Conexa\.env') 3500
-    $fePort = Get-ProjectPort (Join-Path $Root 'ServerFEpos\.env') 3010
+    $apiDir = Join-Path $Root 'api'
+    if (-not (Test-Path $apiDir)) { $apiDir = Join-Path $Root 'Sever.Conexa' }
+    $feDir = Join-Path $Root 'fepos'
+    if (-not (Test-Path $feDir)) { $feDir = Join-Path $Root 'ServerFEpos' }
+    $apiPort = Get-ProjectPort (Join-Path $apiDir '.env') 3500
+    $fePort = Get-ProjectPort (Join-Path $feDir '.env') 3010
 
     return @(
         @{
             Name        = 'ConexaApi'
             DisplayName = 'Conexa API (Sever.Conexa)'
             Description = "API REST DevConexa - puerto $apiPort"
-            WorkDir     = Join-Path $Root 'Sever.Conexa'
+            WorkDir     = $apiDir
             App         = $nodeExe
             Args        = 'src\index.js'
             Port        = $apiPort
@@ -88,7 +109,7 @@ function Get-ServiceDefinitions($nodeExe) {
             Name        = 'ConexaFEpos'
             DisplayName = 'Conexa FEpos (DIAN)'
             Description = "Facturacion electronica DIAN - puerto $fePort"
-            WorkDir     = Join-Path $Root 'ServerFEpos'
+            WorkDir     = $feDir
             App         = $nodeExe
             Args        = 'server.js'
             Port        = $fePort
@@ -164,6 +185,7 @@ if ($Action -ne 'Status' -and -not (Test-IsAdmin)) {
     Write-Host 'Se requieren permisos de administrador. Reejecutando elevado...' -ForegroundColor Yellow
     Write-Host '  Acepte el aviso UAC (Control de cuentas de usuario) para continuar.' -ForegroundColor DarkGray
     $argList = "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" -Action $Action"
+    if ($DeployRoot) { $argList += " -DeployRoot `"$DeployRoot`"" }
     Start-Process powershell -Verb RunAs -ArgumentList $argList
     Write-Host '  Ventana elevada abierta. Use -Action Status para ver el resultado sin admin.' -ForegroundColor DarkGray
     exit 0

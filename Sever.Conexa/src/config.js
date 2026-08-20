@@ -40,6 +40,20 @@ export const config = {
   fePosCertRoot: process.env.FEPOS_CERT_ROOT
     || path.resolve(process.cwd(), '../ServerFEpos/cert/companies'),
   fePosUrl: process.env.FEPOS_URL || 'http://localhost:3010',
+  /** Frontend compilado (C:\ConexaErp\web). Vacío = no servir SPA. */
+  webRoot: process.env.WEB_ROOT
+    ? path.resolve(process.env.WEB_ROOT)
+    : (process.env.NODE_ENV === 'production'
+      ? path.resolve(process.cwd(), '../web')
+      : ''),
   /** GetAcquirer consulta la base real de adquirientes (produccion), aunque facture en pruebas/habilitación */
   dianAcquirerEnv: process.env.DIAN_ACQUIRER_ENV || 'produccion',
+  httpsPort: Number(process.env.HTTPS_PORT) || 443,
+  httpRedirectPort: process.env.HTTP_REDIRECT_PORT === '0'
+    ? 0
+    : Number(process.env.HTTP_REDIRECT_PORT || 0),
+  httpsPfx: process.env.HTTPS_PFX || '',
+  httpsPfxPass: process.env.HTTPS_PFX_PASS || '',
+  httpsKey: process.env.HTTPS_KEY || '',
+  httpsCert: process.env.HTTPS_CERT || '',
 };

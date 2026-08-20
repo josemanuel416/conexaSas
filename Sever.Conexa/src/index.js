@@ -4,6 +4,8 @@ import path from 'path';
 import net from 'net';
 import fs from 'fs';
 import multer from 'multer';
+import https from 'https';
+import http from 'http';
 import { config } from './config.js';
 import { PROJECT_ROOT } from './project-root.js';
 import { authMiddleware, requireSuperAdmin, requireCompanyUser, requireCompanyAdmin } from './middleware/auth.js';
@@ -62,10 +64,22 @@ const app = express();
 
 const allowedOrigins = config.corsOrigins;
 
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+  try {
+    const { hostname, protocol } = new URL(origin);
+    return protocol === 'https:'
+      && (hostname === 'connetcgroup.com' || hostname.endsWith('.connetcgroup.com'));
+  } catch {
+    return false;
+  }
+}
+
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || isAllowedOrigin(origin)) {
         callback(null, true);
       } else {
         callback(null, false);
@@ -163,6 +177,22 @@ companySupport.use(authMiddleware, requireCompanyUser);
 companySupport.use('/support', supportRouter);
 app.use('/api/company', companySupport);
 
+function mountPublishedWeb() {
+  const webRoot = config.webRoot;
+  if (!webRoot) return;
+  const indexFile = path.join(webRoot, 'index.html');
+  if (!fs.existsSync(indexFile)) return;
+
+  app.use(express.static(webRoot, { index: false }));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/assets')) return next();
+    res.sendFile(indexFile);
+  });
+  console.log(`SPA publicada: ${webRoot}`);
+}
+
+mountPublishedWeb();
+
 // Error handler
 app.use((err, _req, res, _next) => {
   if (err instanceof multer.MulterError) {
@@ -195,7 +225,62 @@ async function resolvePort(preferred) {
   throw new Error(`Sin puertos libres desde ${preferred}`);
 }
 
+function loadTlsOptions() {
+  if (config.httpsKey && config.httpsCert
+    && fs.existsSync(config.httpsKey) && fs.existsSync(config.httpsCert)) {
+    return {
+      key: fs.readFileSync(config.httpsKey),
+      cert: fs.readFileSync(config.httpsCert),
+    };
+  }
+  if (config.httpsPfx && fs.existsSync(config.httpsPfx)) {
+    return {
+      pfx: fs.readFileSync(config.httpsPfx),
+      passphrase: config.httpsPfxPass,
+    };
+  }
+  return null;
+}
+
+function attachShutdown(server) {
+  function shutdown() {
+    server.close();
+  }
+  process.once('SIGTERM', shutdown);
+  process.once('SIGINT', shutdown);
+}
+
 async function startServer() {
+  const tls = loadTlsOptions();
+
+  if (tls) {
+    const httpsPort = config.httpsPort || 443;
+    config.activePort = httpsPort;
+    const server = https.createServer(tls, app);
+    server.on('error', (err) => {
+      console.error('Error al iniciar HTTPS:', err.message);
+      process.exit(1);
+    });
+    server.listen(httpsPort, '0.0.0.0', () => {
+      console.log(`Server.Conexa HTTPS en https://0.0.0.0:${httpsPort}`);
+    });
+    attachShutdown(server);
+
+    const redirectPort = config.httpRedirectPort;
+    if (redirectPort > 0) {
+      const redirector = http.createServer((req, res) => {
+        const host = String(req.headers.host || '').replace(/:\d+$/, '');
+        const location = `https://${host}${req.url || '/'}`;
+        res.writeHead(301, { Location: location });
+        res.end();
+      });
+      redirector.listen(redirectPort, '0.0.0.0', () => {
+        console.log(`HTTP ${redirectPort} redirige a HTTPS`);
+      });
+    }
+    return;
+  }
+
   const preferred = config.port;
   const port = await resolvePort(preferred);
   config.activePort = port;
@@ -206,8 +291,8 @@ async function startServer() {
 
   fs.writeFileSync(path.join(process.cwd(), '.runtime-port'), String(port));
 
-  const server = app.listen(port, () => {
-    console.log(`Server.Conexa corriendo en http://localhost:${port}`);
+  const server = app.listen(port, '0.0.0.0', () => {
+    console.log(`Server.Conexa corriendo en http://0.0.0.0:${port}`);
   });
 
   server.on('error', (err) => {
@@ -215,12 +300,7 @@ async function startServer() {
     process.exit(1);
   });
 
-  function shutdown() {
-    server.close();
-  }
-
-  process.once('SIGTERM', shutdown);
-  process.once('SIGINT', shutdown);
+  attachShutdown(server);
 }
 
 startServer().catch((err) => {

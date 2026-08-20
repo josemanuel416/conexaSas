@@ -174,6 +174,7 @@ function formatInvoice(row, details = [], submissions = []) {
     creditNoteScope: row.credit_note_scope || null,
     creditNoteConceptName: row.credit_note_concept_name || null,
     creditNoteSequence: row.credit_note_sequence != null ? Number(row.credit_note_sequence) : null,
+    createdBy: row.created_by || null,
     details,
     submissions,
     createdAt: row.created_at,
@@ -283,23 +284,43 @@ async function loadCompanyEmailRow(companyId) {
   return rows[0] || null;
 }
 
-async function loadSalesDocumentContext(documentId, companyId) {
+async function loadSalesDocumentContext(documentId, companyId, printedByUserId = null) {
   const document = await loadInvoice(documentId, companyId);
   if (!document || !SALES_KINDS.includes(document.documentKind)) {
     return null;
   }
   const { rows: companyRows } = await pool.query(
-    `SELECT name, nit, address, phone, logo_path FROM companies WHERE id = $1`,
+    `SELECT name, nit, address, phone, logo_path,
+            theme_primary, theme_secondary, theme_accent
+     FROM companies WHERE id = $1`,
     [companyId],
   );
   const { rows: clientRows } = await pool.query(
     `SELECT * FROM clients WHERE id = $1 AND company_id = $2`,
     [document.clientId, companyId],
   );
+  const userIds = [...new Set([document.createdBy, printedByUserId].filter(Boolean))];
+  let usersById = {};
+  if (userIds.length) {
+    const { rows: userRows } = await pool.query(
+      `SELECT id, email, full_name FROM users WHERE id = ANY($1::uuid[])`,
+      [userIds],
+    );
+    usersById = Object.fromEntries(userRows.map((u) => [u.id, u]));
+  }
+  const companyRow = companyRows[0] || {};
   return {
     document,
-    company: companyRows[0] || {},
+    company: {
+      ...companyRow,
+      logoPath: companyRow.logo_path,
+      themePrimary: companyRow.theme_primary,
+      themeSecondary: companyRow.theme_secondary,
+      themeAccent: companyRow.theme_accent,
+    },
     client: clientRows[0] ? formatClient(clientRows[0]) : null,
+    preparedBy: usersById[document.createdBy] || null,
+    printedBy: usersById[printedByUserId] || usersById[document.createdBy] || null,
   };
 }
 
@@ -1835,7 +1856,7 @@ router.patch('/documents/:id/confirm', requirePermission('ventas.cotizar'), asyn
 });
 
 router.get('/documents/:id/pdf', requirePermission('ventas.acceso'), async (req, res) => {
-  const ctx = await loadSalesDocumentContext(req.params.id, req.user.companyId);
+  const ctx = await loadSalesDocumentContext(req.params.id, req.user.companyId, req.user.userId);
   if (!ctx) return res.status(404).json({ error: 'Documento no encontrado' });
 
   try {
@@ -1843,6 +1864,8 @@ router.get('/documents/:id/pdf', requirePermission('ventas.acceso'), async (req,
       company: ctx.company,
       document: ctx.document,
       client: ctx.client,
+      preparedBy: ctx.preparedBy,
+      printedBy: ctx.printedBy,
     });
     const fileName = buildSalesDocumentPdfFileName(ctx.document);
     const forceDownload = req.query.download === '1' || req.query.download === 'true';
@@ -1860,7 +1883,7 @@ router.get('/documents/:id/pdf', requirePermission('ventas.acceso'), async (req,
 });
 
 router.post('/documents/:id/send-to-client', requirePermission('ventas.cotizar'), async (req, res) => {
-  const ctx = await loadSalesDocumentContext(req.params.id, req.user.companyId);
+  const ctx = await loadSalesDocumentContext(req.params.id, req.user.companyId, req.user.userId);
   if (!ctx) return res.status(404).json({ error: 'Cotización no encontrada' });
   if (ctx.document.documentKind !== 'cotizacion') {
     return res.status(400).json({ error: 'Solo se pueden enviar cotizaciones al cliente' });
@@ -1885,6 +1908,8 @@ router.post('/documents/:id/send-to-client', requirePermission('ventas.cotizar')
       company: ctx.company,
       document: ctx.document,
       client: ctx.client,
+      preparedBy: ctx.preparedBy,
+      printedBy: ctx.printedBy,
     });
     const pdfFileName = buildSalesDocumentPdfFileName(ctx.document);
     const docNumber = ctx.document.internalNumber || ctx.document.id;

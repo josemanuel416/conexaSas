@@ -1,6 +1,11 @@
-const API_URL = import.meta.env.DEV
-  ? ''
-  : (import.meta.env.VITE_API_URL || 'http://localhost:3500')
+function resolveApiUrl() {
+  if (import.meta.env.DEV) return ''
+  const raw = import.meta.env.VITE_API_URL
+  if (raw === '' || raw === 'same-origin') return ''
+  return raw || 'http://localhost:3500'
+}
+
+const API_URL = resolveApiUrl()
 
 function handleUnauthorized(path) {
   if (typeof window === 'undefined') return
