@@ -1,8 +1,8 @@
 function resolveApiUrl() {
+  const fromEnv = import.meta.env.VITE_API_URL
   if (import.meta.env.DEV) return ''
-  const raw = import.meta.env.VITE_API_URL
-  if (raw === '' || raw === 'same-origin') return ''
-  return raw || 'http://localhost:3500'
+  if (fromEnv === '' || fromEnv === 'same-origin') return ''
+  return (fromEnv || 'http://localhost:3500').replace(/\/$/, '')
 }
 
 const API_URL = resolveApiUrl()
@@ -78,7 +78,7 @@ async function request(path, options = {}) {
     const fallback = data.message
       || data.error
       || (res.status === 502 ? 'La API no respondió (502). Ejecute .\\Scripts\\restart-api.ps1 y recargue la página (F5).' : null)
-      || (res.status === 404 ? `Ruta no encontrada (${path}). ¿Reinició la API?` : null)
+      || (res.status === 404 && !data.error ? `Ruta no encontrada (${path}). ¿Reinició la API?` : null)
       || `Error en la solicitud (HTTP ${res.status})`
     const err = new Error(fallback)
     err.status = res.status
@@ -388,6 +388,78 @@ export const api = {
     createCreditNote: (d) => request('/api/company/ventas/credit-notes', { method: 'POST', body: JSON.stringify(d) }),
     updateCreditNote: (id, d) => request(`/api/company/ventas/credit-notes/${id}`, { method: 'PATCH', body: JSON.stringify(d) }),
     voidCreditNote: (id) => request(`/api/company/ventas/credit-notes/${id}/void`, { method: 'PATCH' }),
+  },
+
+  cuentasPagar: {
+    list: (params = {}) => {
+      const q = new URLSearchParams(Object.entries(params).filter(([, v]) => v != null && v !== '')).toString()
+      return request(`/api/company/cuentas-pagar${q ? '?' + q : ''}`)
+    },
+    get: (id) => request(`/api/company/cuentas-pagar/${id}`),
+    create: (d) => request('/api/company/cuentas-pagar', { method: 'POST', body: JSON.stringify(d) }),
+    update: (id, d) => request(`/api/company/cuentas-pagar/${id}`, { method: 'PUT', body: JSON.stringify(d) }),
+    confirm: (id) => request(`/api/company/cuentas-pagar/${id}/confirm`, { method: 'POST' }),
+    sendDian: (id) => request(`/api/company/cuentas-pagar/${id}/send-dian`, { method: 'POST' }),
+    void: (id) => request(`/api/company/cuentas-pagar/${id}/void`, { method: 'PATCH' }),
+    submissions: (id) => request(`/api/company/cuentas-pagar/${id}/submissions`),
+    submissionDetail: (id, attempt) =>
+      request(`/api/company/cuentas-pagar/${id}/submissions/${attempt}/detail`),
+    fetchPdf: (id) => {
+      const path = `/api/company/cuentas-pagar/${id}/pdf`
+      return api.inventario.fetchBinary(path, `CxP-${id}.pdf`)
+    },
+    conceptosNotas: {
+      list: (activeOnly = false) => {
+        const q = activeOnly ? '?active=1' : ''
+        return request(`/api/company/cuentas-pagar/conceptos-notas${q}`)
+      },
+      dianCatalog: () => request('/api/company/cuentas-pagar/conceptos-notas/dian'),
+      create: (d) => request('/api/company/cuentas-pagar/conceptos-notas', { method: 'POST', body: JSON.stringify(d) }),
+      update: (id, d) => request(`/api/company/cuentas-pagar/conceptos-notas/${id}`, { method: 'PUT', body: JSON.stringify(d) }),
+    },
+    notas: {
+      list: (fcxpId) => request(`/api/company/cuentas-pagar/${fcxpId}/notas`),
+      get: (fcxpId, notaId) => request(`/api/company/cuentas-pagar/${fcxpId}/notas/${notaId}`),
+      create: (fcxpId, d) => request(`/api/company/cuentas-pagar/${fcxpId}/notas`, { method: 'POST', body: JSON.stringify(d) }),
+      update: (fcxpId, notaId, d) => request(`/api/company/cuentas-pagar/${fcxpId}/notas/${notaId}`, { method: 'PUT', body: JSON.stringify(d) }),
+      confirm: (fcxpId, notaId) => request(`/api/company/cuentas-pagar/${fcxpId}/notas/${notaId}/confirm`, { method: 'POST' }),
+      sendDian: (fcxpId, notaId) => request(`/api/company/cuentas-pagar/${fcxpId}/notas/${notaId}/send-dian`, { method: 'POST' }),
+      void: (fcxpId, notaId) => request(`/api/company/cuentas-pagar/${fcxpId}/notas/${notaId}/void`, { method: 'PATCH' }),
+      disponibilidad: (fcxpId, excludeNotaId = null) => {
+        const q = excludeNotaId ? `?excludeNotaId=${encodeURIComponent(excludeNotaId)}` : ''
+        return request(`/api/company/cuentas-pagar/${fcxpId}/notas/disponibilidad${q}`)
+      },
+      submissions: (fcxpId, notaId) => request(`/api/company/cuentas-pagar/${fcxpId}/notas/${notaId}/submissions`),
+      submissionDetail: (fcxpId, notaId, attempt) =>
+        request(`/api/company/cuentas-pagar/${fcxpId}/notas/${notaId}/submissions/${attempt}/detail`),
+      fetchPdf: (fcxpId, notaId, notaLabel = 'nota') =>
+        api.inventario.fetchBinary(
+          `/api/company/cuentas-pagar/${fcxpId}/notas/${notaId}/pdf`,
+          `NAS-${notaLabel}.pdf`,
+        ),
+    },
+    // Alias en inglés (compatibilidad con bundles en caché)
+    notes: {
+      list: (fcxpId) => request(`/api/company/cuentas-pagar/${fcxpId}/notes`),
+      get: (fcxpId, notaId) => request(`/api/company/cuentas-pagar/${fcxpId}/notes/${notaId}`),
+      create: (fcxpId, d) => request(`/api/company/cuentas-pagar/${fcxpId}/notes`, { method: 'POST', body: JSON.stringify(d) }),
+      update: (fcxpId, notaId, d) => request(`/api/company/cuentas-pagar/${fcxpId}/notes/${notaId}`, { method: 'PUT', body: JSON.stringify(d) }),
+      confirm: (fcxpId, notaId) => request(`/api/company/cuentas-pagar/${fcxpId}/notes/${notaId}/confirm`, { method: 'POST' }),
+      sendDian: (fcxpId, notaId) => request(`/api/company/cuentas-pagar/${fcxpId}/notes/${notaId}/send-dian`, { method: 'POST' }),
+      void: (fcxpId, notaId) => request(`/api/company/cuentas-pagar/${fcxpId}/notes/${notaId}/void`, { method: 'PATCH' }),
+      disponibilidad: (fcxpId, excludeNotaId = null) => {
+        const q = excludeNotaId ? `?excludeNotaId=${encodeURIComponent(excludeNotaId)}` : ''
+        return request(`/api/company/cuentas-pagar/${fcxpId}/notes/disponibilidad${q}`)
+      },
+      submissions: (fcxpId, notaId) => request(`/api/company/cuentas-pagar/${fcxpId}/notes/${notaId}/submissions`),
+      submissionDetail: (fcxpId, notaId, attempt) =>
+        request(`/api/company/cuentas-pagar/${fcxpId}/notes/${notaId}/submissions/${attempt}/detail`),
+      fetchPdf: (fcxpId, notaId, notaLabel = 'nota') =>
+        api.inventario.fetchBinary(
+          `/api/company/cuentas-pagar/${fcxpId}/notes/${notaId}/pdf`,
+          `NAS-${notaLabel}.pdf`,
+        ),
+    },
   },
 
   caja: {

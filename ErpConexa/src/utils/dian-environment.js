@@ -10,7 +10,7 @@ export function dianEnvironmentHint(environment) {
     return 'Set de habilitación DIAN: envía facturas al gráfico de pruebas. Requiere prefijo SETP y el código del set configurado en el emisor.';
   }
   if (environment === 'pruebas') {
-    return 'Ambiente de pruebas DIAN: facture con normalidad tras aprobar el set. No cuenta en el gráfico de habilitación.';
+    return 'Ambiente de pruebas DIAN: el mismo número de resolución puede usarse en FV y DS (prefijos SETP y SEDS). No cuenta en el gráfico de habilitación.';
   }
   if (environment === 'produccion') {
     return 'Producción: facturación real ante la DIAN con validez fiscal.';

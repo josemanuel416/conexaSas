@@ -49,6 +49,7 @@
           </template>
           <template #body-cell-documentType="props">
             <q-td :props="props">
+              <q-badge outline color="grey-7" class="q-mr-xs">{{ props.row.documentProcess || 'FV' }}</q-badge>
               <q-badge outline color="primary">{{ docTypeLabel(props.row.documentType) }}</q-badge>
             </q-td>
           </template>
@@ -526,9 +527,21 @@
     >
       <div class="dian-resolution-grid">
         <q-select
+          v-model="resolutionForm.documentProcess"
+          class="f-process"
+          :options="processOptions"
+          label="Proceso *"
+          outlined
+          dense
+          hide-bottom-space
+          emit-value
+          map-options
+          @update:model-value="onProcessChange"
+        />
+        <q-select
           v-model="resolutionForm.documentType"
           class="f-type"
-          :options="docTypeOptions"
+          :options="filteredDocTypeOptions"
           label="Tipo documento *"
           outlined
           dense
@@ -834,6 +847,7 @@ const crudId = ref(null)
 
 const resolutionForm = reactive({
   id: null,
+  documentProcess: 'FV',
   documentType: '01',
   resolutionNumber: '',
   prefix: '',
@@ -890,15 +904,40 @@ function emptyClientForm() {
     departmentName: '',
     departmentCode: '',
     countryCode: 'CO',
+    manejaDocSoporte: false,
   }
 }
 
 const clientForm = reactive(emptyClientForm())
 
-const docTypeOptions = [
+const processOptions = [
+  { label: 'Facturación venta (FV)', value: 'FV' },
+  { label: 'Documento soporte (DS)', value: 'DS' },
+]
+
+const docTypeOptionsFv = [
   { label: 'Factura (01)', value: '01' },
   { label: 'Nota crédito (91)', value: '91' },
 ]
+
+const docTypeOptionsDs = [
+  { label: 'Documento soporte (05)', value: '05' },
+  { label: 'Nota ajuste DS (95)', value: '95' },
+]
+
+const filteredDocTypeOptions = computed(() =>
+  resolutionForm.documentProcess === 'DS' ? docTypeOptionsDs : docTypeOptionsFv
+)
+
+function onProcessChange(process) {
+  resolutionForm.documentType = process === 'DS' ? '05' : '01'
+}
+
+function onDocTypeChange() {
+  if (resolutionForm.documentProcess === 'DS' && !['05', '95'].includes(resolutionForm.documentType)) {
+    resolutionForm.documentType = '05'
+  }
+}
 
 const envOptions = [
   { label: 'Habilitación (set DIAN)', value: 'habilitacion' },
@@ -1163,12 +1202,16 @@ async function refreshNextServicePreview() {
 }
 
 function docTypeLabel(type) {
-  return type === '91' ? 'NC' : 'Factura'
+  if (type === '91') return 'NC'
+  if (type === '95') return 'NAS'
+  if (type === '05') return 'DS'
+  return 'Factura'
 }
 
 function openResolutionDialog(row = null) {
   Object.assign(resolutionForm, {
     id: row?.id || null,
+    documentProcess: row?.documentProcess || 'FV',
     documentType: row?.documentType || '01',
     resolutionNumber: row?.resolutionNumber || '',
     prefix: row?.prefix || '',
@@ -1194,17 +1237,53 @@ async function saveResolution() {
       throw new Error('La clave técnica es obligatoria')
     }
 
+    const prefix = String(resolutionForm.prefix || '').trim().toUpperCase()
+    const resolNumber = String(resolutionForm.resolutionNumber || '').trim()
+    const others = resolutions.value.filter((r) => r.id !== resolutionForm.id)
+
+    if (resolutionForm.dianEnvironment === 'pruebas') {
+      const samePair = others.find(
+        (r) => r.dianEnvironment === 'pruebas'
+          && String(r.resolutionNumber || '') === resolNumber
+          && String(r.prefix || '').toUpperCase() === prefix
+          && (r.documentProcess || 'FV') === resolutionForm.documentProcess
+      )
+      if (samePair) {
+        throw new Error(
+          `Ya existe una resolución de ${resolutionForm.documentProcess === 'DS' ? 'documento soporte' : 'facturación'} con ese número y prefijo`
+        )
+      }
+    } else {
+      const prefixUsed = others.find((r) => String(r.prefix || '').toUpperCase() === prefix)
+      if (prefixUsed) {
+        throw new Error(
+          `El prefijo ${prefix} ya está registrado. En habilitación y producción el prefijo DS debe ser distinto al de FV`
+        )
+      }
+      const numberUsed = others.find((r) => String(r.resolutionNumber || '') === resolNumber)
+      if (numberUsed) {
+        throw new Error(`El número de resolución ${resolNumber} ya está registrado`)
+      }
+    }
+
     const willBeActive = resolutionForm.id ? resolutionForm.isActive : true
     if (willBeActive) {
-      const conflict = resolutions.value.find(
+      const conflict = others.find(
         (r) => r.isActive
           && r.documentType === resolutionForm.documentType
-          && r.id !== resolutionForm.id
+          && (r.documentProcess || 'FV') === resolutionForm.documentProcess
       )
       if (conflict) {
-        const tipo = resolutionForm.documentType === '91' ? 'nota crédito' : 'factura'
+        const proc = resolutionForm.documentProcess === 'DS' ? 'documento soporte' : 'facturación'
+        const tipo = resolutionForm.documentType === '91'
+          ? 'nota crédito'
+          : resolutionForm.documentType === '95'
+            ? 'nota ajuste DS'
+            : resolutionForm.documentType === '05'
+              ? 'documento soporte'
+              : 'factura'
         throw new Error(
-          `Ya hay una resolución activa de ${tipo} (${conflict.prefix} — ${conflict.resolutionNumber}). Desactívela primero.`
+          `Ya hay una resolución activa de ${proc} (${tipo}, ${conflict.prefix} — ${conflict.resolutionNumber}). Desactívela primero.`
         )
       }
     }
@@ -1276,7 +1355,7 @@ function openCrud(type, row = null) {
       cityName: row.cityName || '',
       departmentName: row.departmentName || '',
       departmentCode: row.departmentCode || '',
-      countryCode: row.countryCode || 'CO',
+      manejaDocSoporte: row.manejaDocSoporte ?? false,
     } : {})
   } else {
     Object.assign(crudForm, {

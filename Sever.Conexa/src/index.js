@@ -41,6 +41,7 @@ import ventasRouter from './routes/company/ventas.js';
 import cajaRouter from './routes/company/caja.js';
 import inventarioRouter from './routes/company/inventario.js';
 import contabilidadRouter from './routes/company/contabilidad.js';
+import cuentasPagarRouter from './routes/company/cuentas-pagar.js';
 import catalogRouter from './routes/catalog.js';
 import publicRouter from './routes/public.js';
 import {
@@ -59,6 +60,7 @@ import {
   updateSupportTicketStatus,
 } from './routes/admin/support.js';
 import supportRouter from './routes/company/support.js';
+import { pingFePos } from './utils/fepos-client.js';
 
 const app = express();
 
@@ -93,8 +95,16 @@ app.use(express.json());
 
 app.use('/assets', express.static(path.join(PROJECT_ROOT, 'assets')));
 
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'server-conexa', port: config.activePort });
+app.get('/api/health', async (_req, res) => {
+  const fePosPing = await pingFePos();
+  res.json({
+    status: 'ok',
+    service: 'server-conexa',
+    port: config.activePort,
+    features: { fcxpNotas: true, fcxpNotaPdf: true },
+    fePosUrl: config.fePosUrl,
+    fePos: fePosPing.ok ? fePosPing.payload : { ok: false, error: fePosPing.error },
+  });
 });
 
 app.use('/api/public', publicRouter);
@@ -166,6 +176,11 @@ const companyContabilidad = express.Router();
 companyContabilidad.use(authMiddleware, requireCompanyUser);
 companyContabilidad.use('/contabilidad', contabilidadRouter);
 app.use('/api/company', companyContabilidad);
+
+const companyCuentasPagar = express.Router();
+companyCuentasPagar.use(authMiddleware, requireCompanyUser);
+companyCuentasPagar.use('/cuentas-pagar', cuentasPagarRouter);
+app.use('/api/company', companyCuentasPagar);
 
 const companyCatalog = express.Router();
 companyCatalog.use(authMiddleware, requireCompanyUser);

@@ -1,4 +1,5 @@
 // server.js
+require('./services/patch-dns-lookup');
 require('dotenv').config();
 process.env.TZ = process.env.TZ || 'America/Bogota';
 const express = require('express');
@@ -35,7 +36,31 @@ app.get('/health', (_req, res) => {
     port: PORT,
     uptimeSec: Math.floor(process.uptime()),
     pid: process.pid,
+    dianDnsFix: true,
   });
+});
+
+app.get('/health/dns', async (_req, res) => {
+  try {
+    const { resolveHostAddresses } = require('./services/patch-dns-lookup');
+    const addresses = await resolveHostAddresses('vpfe-hab.dian.gov.co', { all: true });
+    res.json({ ok: true, host: 'vpfe-hab.dian.gov.co', addresses });
+  } catch (err) {
+    res.status(503).json({ ok: false, error: err.message });
+  }
+});
+
+app.get('/health/wsdl', async (_req, res) => {
+  try {
+    const soap = require('soap');
+    const { SOAP_CLIENT_OPTIONS, resolveDianUrls } = require('./services/dian-client');
+    const { soapUrl } = resolveDianUrls('habilitacion');
+    const t0 = Date.now();
+    await soap.createClientAsync(soapUrl, SOAP_CLIENT_OPTIONS);
+    res.json({ ok: true, soapUrl, ms: Date.now() - t0 });
+  } catch (err) {
+    res.status(503).json({ ok: false, error: err.message });
+  }
 });
 
 // Middleware para recibir XML crudo

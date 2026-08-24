@@ -48,6 +48,7 @@ export function formatClient(c) {
     departmentName: c.department_name,
     countryCode: c.country_code || 'CO',
     isActive: c.is_active,
+    manejaDocSoporte: Boolean(c.maneja_doc_soporte),
   };
 }
 
@@ -111,5 +112,6 @@ export function prepareClientPayload(body) {
     departmentName: body.departmentName?.trim() || null,
     countryCode: body.countryCode?.trim() || 'CO',
     isActive: body.isActive,
+    manejaDocSoporte: Boolean(body.manejaDocSoporte),
   };
 }

@@ -1,11 +1,64 @@
 // services/dian-client.js
+require('./patch-dns-lookup');
 require('dotenv').config();
+const https = require('https');
+const axios = require('axios');
 const soap = require('soap');
 const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
+const { resolveHostAddresses } = require('./patch-dns-lookup');
 const { createDianSecurityFromP12 } = require('./ws-security');
 const { loadLegacyConfig, cacheKeyForConfig } = require('./company-config');
+
+const REQUEST_TIMEOUT_MS = parseInt(process.env.DIAN_REQUEST_TIMEOUT_MS || '120000', 10);
+
+/** Lookup explícito para axios/soap (no depende solo del parche global de dns.lookup). */
+function dianDnsLookup(hostname, options, callback) {
+  let cb = callback;
+  let opts = options;
+  if (typeof opts === 'function') {
+    cb = opts;
+    opts = {};
+  } else if (!opts) {
+    opts = {};
+  }
+
+  resolveHostAddresses(hostname, opts)
+    .then((addresses) => {
+      if (opts.all) {
+        cb(null, addresses);
+        return;
+      }
+      const pick = opts.family === 6
+        ? addresses.find((entry) => entry.family === 6) || addresses[0]
+        : addresses.find((entry) => entry.family === 4) || addresses[0];
+      cb(null, pick.address, pick.family);
+    })
+    .catch((err) => cb(err));
+}
+
+const dianHttpsAgent = new https.Agent({
+  keepAlive: true,
+  lookup: dianDnsLookup,
+});
+
+const dianHttpClient = axios.create({
+  httpsAgent: dianHttpsAgent,
+  timeout: REQUEST_TIMEOUT_MS,
+  proxy: false,
+});
+
+const SOAP_CLIENT_OPTIONS = {
+  forceSoap12Headers: true,
+  namespaceArrayElements: false,
+  wsdl_options: {
+    timeout: REQUEST_TIMEOUT_MS,
+    httpsAgent: dianHttpsAgent,
+  },
+  request: dianHttpClient,
+  httpClient: new soap.HttpClient({ request: dianHttpClient }),
+};
 
 function resolveDianUrls(dianEnv) {
   const env = dianEnv || process.env.DIAN_ENV || 'habilitacion';
@@ -21,8 +74,6 @@ function resolveDianUrls(dianEnv) {
   return { env, soapUrl, endpoint };
 }
 
-const REQUEST_TIMEOUT_MS = parseInt(process.env.DIAN_REQUEST_TIMEOUT_MS || '120000', 10);
-
 let cachedClient = null;
 let cachedClientKey = null;
 
@@ -37,11 +88,7 @@ async function getOrCreateClient(companyConfig = null) {
 
   console.log('[DIAN] Descargando WSDL (puede tardar 10-30s)...');
   const wsdlStart = Date.now();
-  const client = await soap.createClientAsync(soapUrl, {
-    forceSoap12Headers: true,
-    namespaceArrayElements: false,
-    wsdl_options: { timeout: REQUEST_TIMEOUT_MS },
-  });
+  const client = await soap.createClientAsync(soapUrl, SOAP_CLIENT_OPTIONS);
   console.log(`[DIAN] WSDL cargado en ${Date.now() - wsdlStart}ms`);
 
   client.setEndpoint(endpoint);
@@ -336,6 +383,9 @@ function formatDianError(err) {
     errorType = 'Timeout de Conexion';
   } else if (err.code === 'ECONNREFUSED') {
     errorType = 'Conexion Rechazada';
+  } else if (err.code === 'ENOTFOUND') {
+    errorType = 'Error de DNS';
+    errorDetail = 'No se pudo resolver el servidor DIAN (vpfe-hab.dian.gov.co). Verifique conexion a internet o DNS del equipo.';
   } else if (err.root?.Envelope?.Body?.Fault) {
     const fault = err.root.Envelope.Body.Fault;
     errorType = `SOAP Fault: ${fault?.Code?.Subcode?.Value || ''}`;
@@ -396,4 +446,7 @@ module.exports = {
   pollStatusZipUntilFinal,
   isStatusZipPending,
   isStatusZipFinal,
+  SOAP_CLIENT_OPTIONS,
+  resolveDianUrls,
+  dianHttpsAgent,
 };

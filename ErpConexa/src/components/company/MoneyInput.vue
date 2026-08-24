@@ -7,6 +7,8 @@
     inputmode="decimal"
     :hide-hint="compact"
     :hint="compact ? void 0 : formattedHint"
+    :readonly="readonly"
+    :disable="disable"
     @update:model-value="onInput"
   />
 </template>
@@ -19,6 +21,8 @@ const props = defineProps({
   modelValue: { type: [Number, String], default: 0 },
   label: { type: String, default: 'Precio' },
   compact: { type: Boolean, default: false },
+  readonly: { type: Boolean, default: false },
+  disable: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -45,6 +49,7 @@ const formattedHint = computed(() => {
 })
 
 function onInput(value) {
+  if (props.readonly || props.disable) return
   text.value = sanitizeMoneyInput(value)
   emit('update:modelValue', parseMoneyInput(text.value))
 }

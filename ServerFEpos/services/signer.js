@@ -102,18 +102,37 @@ function formatIssuerRfc2253(issuerAttributes) {
 
 function extractTaxAmount(doc, taxSchemeId) {
   const taxTotals = doc.getElementsByTagName('cac:TaxTotal');
+  let total = 0;
+  let found = false;
   for (let i = 0; i < taxTotals.length; i++) {
+    const parentName = localElementName(taxTotals[i].parentNode);
+    if (parentName !== 'Invoice' && parentName !== 'CreditNote') continue;
     const subtotals = taxTotals[i].getElementsByTagName('cac:TaxSubtotal');
     for (let j = 0; j < subtotals.length; j++) {
       const scheme = subtotals[j].getElementsByTagName('cac:TaxScheme')[0];
       if (!scheme) continue;
       const schemeId = scheme.getElementsByTagName('cbc:ID')[0]?.textContent?.trim();
       if (schemeId === taxSchemeId) {
-        return subtotals[j].getElementsByTagName('cbc:TaxAmount')[0]?.textContent?.trim() || '0.00';
+        total += Number(subtotals[j].getElementsByTagName('cbc:TaxAmount')[0]?.textContent || 0);
+        found = true;
       }
     }
   }
-  return '0.00';
+  return found ? total.toFixed(2) : '0.00';
+}
+
+function applySupportDocumentQr(doc, cuds) {
+  const invoiceTypeCode = doc.getElementsByTagName('cbc:InvoiceTypeCode')[0]?.textContent?.trim();
+  const creditNoteTypeCode = doc.getElementsByTagName('cbc:CreditNoteTypeCode')[0]?.textContent?.trim();
+  if (invoiceTypeCode !== '05' && creditNoteTypeCode !== '95') return;
+  const env = doc.getElementsByTagName('cbc:ProfileExecutionID')[0]?.textContent?.trim() || '2';
+  const host = env === '1'
+    ? 'https://catalogo-vpfe.dian.gov.co'
+    : 'https://catalogo-vpfe-hab.dian.gov.co';
+  const qrEls = doc.getElementsByTagNameNS('*', 'QRCode');
+  if (qrEls[0] && cuds) {
+    qrEls[0].textContent = `${host}/document/searchqr?documentkey=${cuds}`;
+  }
 }
 
 function calculateSoftwareSecurityCode(softwareId, softwarePin, prefix, consecutive) {
@@ -123,35 +142,52 @@ function calculateSoftwareSecurityCode(softwareId, softwarePin, prefix, consecut
 
 function calculateCUFE(doc, claveTecnica, softwarePin) {
   const isCreditNote = !!doc.getElementsByTagName('cbc:CreditNoteTypeCode')[0];
-  const key = isCreditNote
+  const creditNoteTypeCode = doc.getElementsByTagName('cbc:CreditNoteTypeCode')[0]?.textContent?.trim() || '';
+  const invoiceTypeCode = doc.getElementsByTagName('cbc:InvoiceTypeCode')[0]?.textContent?.trim() || '01';
+  const isSupportDocument = invoiceTypeCode === '05' || creditNoteTypeCode === '95';
+  const useCude = isCreditNote && creditNoteTypeCode !== '95';
+  const key = (useCude || isSupportDocument)
     ? (softwarePin || '')
     : (claveTecnica || process.env.CLAVE_TECNICA || '');
   if (!key) {
-    console.warn(isCreditNote ? '[CUDE] PIN software no configurado' : '[CUFE] CLAVE_TECNICA no configurada');
+    const label = isSupportDocument ? '[CUDS]' : useCude ? '[CUDE]' : '[CUFE]';
+    console.warn(isSupportDocument || useCude ? `${label} PIN software no configurado` : '[CUFE] CLAVE_TECNICA no configurada');
   }
 
   const invoiceNumber = doc.getElementsByTagName('cbc:ID')[0]?.textContent || '';
   const issueDate = doc.getElementsByTagName('cbc:IssueDate')[0]?.textContent || '';
   const issueTime = doc.getElementsByTagName('cbc:IssueTime')[0]?.textContent || '';
-  const lineExtension = doc.getElementsByTagName('cbc:LineExtensionAmount')[0]?.textContent || '0.00';
+  const monetary = doc.getElementsByTagName('cac:LegalMonetaryTotal')[0];
+  const lineExtension = monetary?.getElementsByTagName('cbc:LineExtensionAmount')[0]?.textContent
+    || doc.getElementsByTagName('cbc:LineExtensionAmount')[0]?.textContent
+    || '0.00';
+  const payable = monetary?.getElementsByTagName('cbc:PayableAmount')[0]?.textContent
+    || doc.getElementsByTagName('cbc:PayableAmount')[0]?.textContent
+    || '0.00';
 
   const valImp1 = extractTaxAmount(doc, '01');
   const valImp2 = extractTaxAmount(doc, '04');
   const valImp3 = extractTaxAmount(doc, '03');
-  const payable = doc.getElementsByTagName('cbc:PayableAmount')[0]?.textContent || '0.00';
 
   const supplierParty = doc.getElementsByTagName('cac:AccountingSupplierParty')[0];
-  const supplierID = supplierParty?.getElementsByTagName('cbc:CompanyID')[0]?.textContent || '';
+  const supplierTaxScheme = supplierParty?.getElementsByTagName('cac:PartyTaxScheme')[0];
+  const supplierID = supplierTaxScheme?.getElementsByTagName('cbc:CompanyID')[0]?.textContent?.replace(/\D/g, '') || '';
   const customerParty = doc.getElementsByTagName('cac:AccountingCustomerParty')[0];
-  const customerID = customerParty?.getElementsByTagName('cbc:CompanyID')[0]?.textContent || '';
+  const customerTaxScheme = customerParty?.getElementsByTagName('cac:PartyTaxScheme')[0];
+  const customerID = customerTaxScheme?.getElementsByTagName('cbc:CompanyID')[0]?.textContent?.replace(/\D/g, '') || '';
   const profileExecutionID = doc.getElementsByTagName('cbc:ProfileExecutionID')[0]?.textContent || '2';
 
-  // En CUFE de factura el tipo documento (01) coincide con el código IVA.
-  // En CUDE de NC el tipo 91 NO va en la cadena; el primer slot es el impuesto 01.
-  const firstAmountSlot = isCreditNote ? '01' : (
-    doc.getElementsByTagName('cbc:InvoiceTypeCode')[0]?.textContent?.trim() || '01'
-  );
+  if (isSupportDocument) {
+    const cudsString = `${invoiceNumber}${issueDate}${issueTime}${lineExtension}01${valImp1}${payable}${supplierID}${customerID}${key}${profileExecutionID}`;
+    const hash = crypto.createHash('sha384').update(cudsString, 'utf8').digest('hex');
+    console.log('[CUDS] Cadena:', cudsString);
+    console.log('[CUDS] SHA-384:', hash);
+    return hash;
+  }
 
+  // En CUFE de factura el tipo documento (01) coincide con el código IVA.
+  // En CUDE (nota crédito) el primer slot es el impuesto 01.
+  const firstAmountSlot = useCude ? '01' : invoiceTypeCode;
   const cufeString = `${invoiceNumber}${issueDate}${issueTime}${lineExtension}${firstAmountSlot}${valImp1}04${valImp2}03${valImp3}${payable}${supplierID}${customerID}${key}${profileExecutionID}`;
   const hash = crypto.createHash('sha384').update(cufeString, 'utf8').digest('hex');
 
@@ -317,7 +353,15 @@ async function signXML(xmlString, companyConfig = null) {
       const uuidEl = doc.getElementsByTagName('cbc:UUID')[0];
       if (uuidEl) {
         uuidEl.textContent = cufe;
-        console.log('[SIGNER] CUFE asignado');
+        const invoiceTypeCode = doc.getElementsByTagName('cbc:InvoiceTypeCode')[0]?.textContent?.trim();
+        const creditNoteTypeCode = doc.getElementsByTagName('cbc:CreditNoteTypeCode')[0]?.textContent?.trim();
+        if (invoiceTypeCode === '05' || creditNoteTypeCode === '95') {
+          uuidEl.setAttribute('schemeName', 'CUDS-SHA384');
+          applySupportDocumentQr(doc, cufe);
+          console.log('[SIGNER] CUDS y QR asignados');
+        } else {
+          console.log('[SIGNER] CUFE/CUDE asignado');
+        }
       }
 
       // --- Calcular y asignar SSC (usar SoftwareID del XML para coincidir con UBL) ---
