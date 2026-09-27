@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
+import { CONEXASOFT_COMPANY_THEME } from '../config/conexasoft-brand.js';
+import { parseTenantHost } from '../utils/tenant-host.js';
 
 const router = Router();
 
@@ -33,6 +35,48 @@ function formatPlan(row) {
     isFeatured: row.is_featured,
   };
 }
+
+function formatPublicCompany(row) {
+  return {
+    name: row.name,
+    slug: row.slug,
+    theme: {
+      primary: row.theme_primary || CONEXASOFT_COMPANY_THEME.primary,
+      secondary: row.theme_secondary || CONEXASOFT_COMPANY_THEME.secondary,
+      accent: row.theme_accent || CONEXASOFT_COMPANY_THEME.accent,
+    },
+  };
+}
+
+router.get('/host', async (req, res) => {
+  const parsed = parseTenantHost(req.headers.host);
+  if (parsed.kind !== 'tenant') {
+    return res.json({ kind: parsed.kind, slug: null, company: null });
+  }
+  const { rows } = await pool.query(
+    `SELECT name, slug, theme_primary, theme_secondary, theme_accent
+     FROM companies WHERE slug = $1 AND is_active = true`,
+    [parsed.slug],
+  );
+  if (!rows[0]) {
+    return res.status(404).json({ kind: 'tenant', slug: parsed.slug, error: 'Empresa no encontrada' });
+  }
+  res.json({ kind: 'tenant', slug: parsed.slug, company: formatPublicCompany(rows[0]) });
+});
+
+router.get('/companies/:slug', async (req, res) => {
+  const slug = String(req.params.slug || '').trim().toLowerCase();
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    return res.status(400).json({ error: 'Identificador de empresa inválido' });
+  }
+  const { rows } = await pool.query(
+    `SELECT name, slug, theme_primary, theme_secondary, theme_accent
+     FROM companies WHERE slug = $1 AND is_active = true`,
+    [slug],
+  );
+  if (!rows[0]) return res.status(404).json({ error: 'Empresa no encontrada' });
+  res.json(formatPublicCompany(rows[0]));
+});
 
 router.get('/site', async (_req, res) => {
   const { rows } = await pool.query('SELECT * FROM site_content WHERE id = 1');

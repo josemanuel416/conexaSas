@@ -3,6 +3,7 @@ import { pool } from '../db/pool.js';
 import { signToken } from '../middleware/auth.js';
 import { normalizeEmail, normalizePassword } from '../utils/normalize.js';
 import { CONEXASOFT_COMPANY_THEME } from '../config/conexasoft-brand.js';
+import { parseTenantHost } from '../utils/tenant-host.js';
 
 export async function loginCompany(req, res) {
   const email = normalizeEmail(req.body.email);
@@ -23,8 +24,10 @@ export async function loginCompany(req, res) {
     [email]
   );
 
-  const companySlug =
+  const hostTenant = parseTenantHost(req.headers.host);
+  const bodySlug =
     typeof req.body.companySlug === 'string' ? req.body.companySlug.trim().toLowerCase() : '';
+  const companySlug = hostTenant.kind === 'tenant' ? hostTenant.slug : bodySlug;
 
   const activeRows = rows.filter((row) => row.company_active);
 

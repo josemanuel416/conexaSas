@@ -1,4 +1,5 @@
 import { getAuth, isAdmin, isCompanyUser } from 'src/utils/auth.js'
+import { parseTenantHost } from 'src/utils/tenant-host.js'
 
 const routes = [
   // --- Sitio público ---
@@ -167,6 +168,11 @@ export default routes
 
 export function setupRouterGuards(router) {
   router.beforeEach((to) => {
+    const hostTenant = parseTenantHost(window.location.hostname)
+    if (hostTenant.kind === 'tenant' && to.path === '/') {
+      return isCompanyUser() ? '/dashboard' : '/login'
+    }
+
     if (to.meta.requiresAdmin) {
       const auth = getAuth('admin')
       if (!auth || !isAdmin()) {

@@ -163,6 +163,8 @@ export const api = {
       request(`/api/admin/support/tickets/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   },
   public: {
+    host: () => request('/api/public/host'),
+    companyBySlug: (slug) => request(`/api/public/companies/${encodeURIComponent(slug)}`),
     site: () => request('/api/public/site'),
     plans: () => request('/api/public/plans'),
     contact: (data) =>

@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { config } from '../config.js';
+import { pool } from '../db/pool.js';
+import { parseTenantHost } from '../utils/tenant-host.js';
 
 export function signToken(payload) {
   return jwt.sign(payload, config.jwt.secret, {
@@ -30,6 +32,24 @@ export function requireSuperAdmin(req, res, next) {
     return res.status(403).json({ error: 'Acceso solo para administradores' });
   }
   next();
+}
+
+export async function requireMatchingTenantHost(req, res, next) {
+  const parsed = parseTenantHost(req.headers.host);
+  if (parsed.kind !== 'tenant') return next();
+
+  try {
+    const { rows } = await pool.query(
+      'SELECT id FROM companies WHERE slug = $1 AND is_active = true',
+      [parsed.slug],
+    );
+    if (!rows[0] || rows[0].id !== req.user?.companyId) {
+      return res.status(403).json({ error: 'Esta dirección pertenece a otra empresa' });
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
 }
 
 export function requireCompanyUser(req, res, next) {

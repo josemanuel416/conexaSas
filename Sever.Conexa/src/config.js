@@ -36,6 +36,13 @@ export const config = {
   corsOrigins: (process.env.CORS_ORIGIN || 'http://localhost:9500')
     .split(',')
     .map((o) => o.trim()),
+  /** Dominio público de la plataforma. conexa.<dominio> es el portal; <slug>.<dominio> es el tenant. */
+  appDomain: (process.env.APP_DOMAIN || 'connetcgroup.com').trim().toLowerCase(),
+  platformSubdomain: (process.env.PLATFORM_SUBDOMAIN || 'conexa').trim().toLowerCase(),
+  /** El dominio raíz abre el login de esta compañía (sin landing). */
+  apexTenantSlug: (process.env.APEX_TENANT_SLUG || 'connetc-group-sas').trim().toLowerCase(),
+  /** Puerto HTTP extra (80) además del PORT de desarrollo. 0 = no abrir. */
+  httpPublicPort: Number(process.env.HTTP_PUBLIC_PORT) || 0,
   certStoragePath: process.env.CERT_STORAGE_PATH
     || path.resolve(process.cwd(), 'storage/dian-certs'),
   fePosCertRoot: process.env.FEPOS_CERT_ROOT

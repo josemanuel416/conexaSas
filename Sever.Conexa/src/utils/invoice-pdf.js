@@ -6,7 +6,6 @@ import QRCode from 'qrcode';
 import { dianEnvironmentLabel as envLabel } from './dian-environment.js';
 import { resolveProjectPath } from '../project-root.js';
 import { CONEXASOFT_INVOICE_BRAND } from '../config/conexasoft-brand.js';
-import { formatDateTimeEs } from './app-timezone.js';
 
 const PAGE_MARGIN = 40;
 

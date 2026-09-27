@@ -1,5 +1,8 @@
 <template>
-  <LoginPageShell title="Portal de compañía" subtitle="Ingrese con su usuario de empresa">
+  <LoginPageShell :title="pageTitle" :subtitle="pageSubtitle">
+    <q-banner v-if="tenantMissing" dense rounded class="bg-red-1 text-negative q-mb-md">
+      No hay una empresa activa con el código <strong>{{ lockedSlug }}</strong>.
+    </q-banner>
     <q-form @submit.prevent="onSubmit" class="q-gutter-md">
       <q-input
         v-model="email"
@@ -13,7 +16,7 @@
       </q-input>
 
       <q-input
-        v-if="showSlugField"
+        v-if="showSlugField && !lockedSlug"
         v-model="companySlug"
         label="Código de empresa *"
         hint="No use el nombre del admin. Ej: connetc-group-sas"
@@ -61,35 +64,64 @@
 
     <template #links>
       <router-link to="/admin/login">¿Administrador del sistema?</router-link>
-      <span class="login-card__sep">·</span>
-      <router-link to="/">Sitio web</router-link>
+      <template v-if="!lockedSlug">
+        <span class="login-card__sep">·</span>
+        <router-link to="/">Sitio web</router-link>
+      </template>
     </template>
   </LoginPageShell>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { api } from 'src/services/api.js'
 import { saveAuth } from 'src/utils/auth.js'
+import { parseTenantHost } from 'src/utils/tenant-host.js'
 import LoginPageShell from 'src/components/auth/LoginPageShell.vue'
 
 const $q = useQuasar()
 const router = useRouter()
 
+const hostTenant = parseTenantHost(window.location.hostname)
+const lockedSlug = hostTenant.kind === 'tenant' ? hostTenant.slug : ''
+const tenantName = ref('')
+const tenantMissing = ref(false)
+
 const email = ref('')
-const companySlug = ref('')
+const companySlug = ref(lockedSlug)
 const password = ref('')
 const showPass = ref(false)
 const loading = ref(false)
 const showSlugField = ref(false)
 const companyOptions = ref([])
 
+const pageTitle = computed(() => tenantName.value || 'Portal de compañía')
+const pageSubtitle = computed(() => (
+  lockedSlug
+    ? `Empresa ${lockedSlug}`
+    : 'Ingrese con su usuario de empresa'
+))
+
+onMounted(async () => {
+  if (!lockedSlug) return
+  try {
+    const data = await api.public.companyBySlug(lockedSlug)
+    tenantName.value = data.name
+    if (data.theme) {
+      const { applyCompanyTheme } = await import('src/utils/company-theme.js')
+      applyCompanyTheme(data.theme)
+    }
+  } catch {
+    tenantMissing.value = true
+  }
+})
+
 async function onSubmit() {
   loading.value = true
   try {
-    const slug = companySlug.value.trim().toLowerCase() || null
+    const slug = lockedSlug || companySlug.value.trim().toLowerCase() || null
     const data = await api.auth.login(
       email.value.trim().toLowerCase(),
       password.value.trim(),

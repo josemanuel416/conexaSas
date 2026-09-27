@@ -8,7 +8,7 @@ import https from 'https';
 import http from 'http';
 import { config } from './config.js';
 import { PROJECT_ROOT } from './project-root.js';
-import { authMiddleware, requireSuperAdmin, requireCompanyUser, requireCompanyAdmin } from './middleware/auth.js';
+import { authMiddleware, requireSuperAdmin, requireCompanyUser, requireCompanyAdmin, requireMatchingTenantHost } from './middleware/auth.js';
 import { loginAdmin, getAdminProfile } from './routes/admin/auth.js';
 import {
   listCompanies,
@@ -69,8 +69,9 @@ function isAllowedOrigin(origin) {
   if (allowedOrigins.includes(origin)) return true;
   try {
     const { hostname, protocol } = new URL(origin);
-    return protocol === 'https:'
-      && (hostname === 'connetcgroup.com' || hostname.endsWith('.connetcgroup.com'));
+    const domain = config.appDomain;
+    return (protocol === 'https:' || protocol === 'http:')
+      && (hostname === domain || hostname.endsWith(`.${domain}`));
   } catch {
     return false;
   }
@@ -130,10 +131,10 @@ app.use('/api/admin', admin);
 
 // --- Compañía ---
 app.post('/api/auth/login', loginCompany);
-app.get('/api/dashboard', authMiddleware, requireCompanyUser, getCompanyDashboard);
+app.get('/api/dashboard', authMiddleware, requireMatchingTenantHost, requireCompanyUser, getCompanyDashboard);
 
 const company = express.Router();
-company.use(authMiddleware, requireCompanyAdmin);
+company.use(authMiddleware, requireMatchingTenantHost, requireCompanyAdmin);
 company.get('/permissions', listPermissions);
 company.get('/users', listUsers);
 company.get('/users/:id', getUser);
@@ -143,37 +144,37 @@ company.put('/users/:id/permissions', updateUserPermissions);
 app.use('/api/company', company);
 
 const companyAgenda = express.Router();
-companyAgenda.use(authMiddleware, requireCompanyUser);
+companyAgenda.use(authMiddleware, requireMatchingTenantHost, requireCompanyUser);
 companyAgenda.use('/agenda', agendaRouter);
 app.use('/api/company', companyAgenda);
 
 const companyVentas = express.Router();
-companyVentas.use(authMiddleware, requireCompanyUser);
+companyVentas.use(authMiddleware, requireMatchingTenantHost, requireCompanyUser);
 companyVentas.use('/ventas', ventasRouter);
 app.use('/api/company', companyVentas);
 
 const companyCaja = express.Router();
-companyCaja.use(authMiddleware, requireCompanyUser);
+companyCaja.use(authMiddleware, requireMatchingTenantHost, requireCompanyUser);
 companyCaja.use('/caja', cajaRouter);
 app.use('/api/company', companyCaja);
 
 const companyInventario = express.Router();
-companyInventario.use(authMiddleware, requireCompanyUser);
+companyInventario.use(authMiddleware, requireMatchingTenantHost, requireCompanyUser);
 companyInventario.use('/inventario', inventarioRouter);
 app.use('/api/company', companyInventario);
 
 const companyContabilidad = express.Router();
-companyContabilidad.use(authMiddleware, requireCompanyUser);
+companyContabilidad.use(authMiddleware, requireMatchingTenantHost, requireCompanyUser);
 companyContabilidad.use('/contabilidad', contabilidadRouter);
 app.use('/api/company', companyContabilidad);
 
 const companyCatalog = express.Router();
-companyCatalog.use(authMiddleware, requireCompanyUser);
+companyCatalog.use(authMiddleware, requireMatchingTenantHost, requireCompanyUser);
 companyCatalog.use('/catalog', catalogRouter);
 app.use('/api/company', companyCatalog);
 
 const companySupport = express.Router();
-companySupport.use(authMiddleware, requireCompanyUser);
+companySupport.use(authMiddleware, requireMatchingTenantHost, requireCompanyUser);
 companySupport.use('/support', supportRouter);
 app.use('/api/company', companySupport);
 
@@ -294,6 +295,18 @@ async function startServer() {
   const server = app.listen(port, '0.0.0.0', () => {
     console.log(`Server.Conexa corriendo en http://0.0.0.0:${port}`);
   });
+
+  const publicPort = config.httpPublicPort;
+  if (publicPort > 0 && publicPort !== port) {
+    const publicServer = http.createServer(app);
+    publicServer.on('error', (err) => {
+      console.error(`No se pudo abrir el puerto público ${publicPort}:`, err.message);
+    });
+    publicServer.listen(publicPort, '0.0.0.0', () => {
+      console.log(`HTTP público en http://0.0.0.0:${publicPort}`);
+    });
+    attachShutdown(publicServer);
+  }
 
   server.on('error', (err) => {
     console.error('Error al iniciar el servidor:', err.message);
