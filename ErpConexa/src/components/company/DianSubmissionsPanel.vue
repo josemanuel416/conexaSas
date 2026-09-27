@@ -5,7 +5,7 @@
     </div>
 
     <div v-else-if="submissions.length">
-      <div v-if="props.invoiceId" class="row q-gutter-sm q-mb-sm">
+      <div v-if="showPdfToolbar" class="row q-gutter-sm q-mb-sm">
         <q-btn
           flat
           dense
@@ -16,7 +16,7 @@
           @click="openPdf"
         />
         <q-btn
-          v-if="hasApprovedSubmission"
+          v-if="hasApprovedSubmission && props.invoiceId"
           flat
           dense
           no-caps
@@ -28,7 +28,7 @@
           @click="downloadClientPackage"
         />
         <q-btn
-          v-if="hasApprovedSubmission"
+          v-if="hasApprovedSubmission && props.invoiceId"
           flat
           dense
           no-caps
@@ -71,13 +71,13 @@
             <div class="column items-end q-gutter-xs">
               <q-badge :color="submissionColor(s.status)">{{ s.statusCode || s.status }}</q-badge>
               <q-btn
-                v-if="props.invoiceId && (s.hasResponseXml || s.statusMessage)"
+                v-if="canViewXml && (s.hasResponseXml || s.hasRequestXml || s.hasSignedXml || s.statusMessage)"
                 flat
                 dense
                 no-caps
                 color="grey-8"
                 icon="article"
-                label="Ver respuesta"
+                label="Ver XML"
                 :loading="loadingDetailId === s.id"
                 @click="openResponseDetail(s)"
               />
@@ -114,7 +114,25 @@
       Sin envíos registrados a la DIAN.
     </q-banner>
 
+    <div v-if="showPdfToolbar && !submissions.length && (isFcxp || isFcxpNota)" class="row q-gutter-sm q-mb-sm">
+      <q-btn
+        flat
+        dense
+        no-caps
+        color="red-7"
+        icon="picture_as_pdf"
+        label="Ver PDF"
+        @click="openPdf"
+      />
+    </div>
+
     <InvoicePdfDialog v-model="pdfDialogOpen" :invoice-id="props.invoiceId" />
+
+    <InventarioReportPdfDialog
+      v-model="cxpPdfDialogOpen"
+      :title="cxpPdfTitle"
+      :loader="cxpPdfLoader"
+    />
 
     <q-dialog v-model="responseDialogOpen" persistent maximized>
       <q-card class="dian-response-dialog">
@@ -220,12 +238,29 @@ import { api } from 'src/services/api.js'
 import { formatDate } from 'src/utils/date-format.js'
 import { dianEnvironmentLabel } from 'src/utils/dian-environment.js'
 import InvoicePdfDialog from 'src/components/company/InvoicePdfDialog.vue'
+import InventarioReportPdfDialog from 'src/components/company/inventario/InventarioReportPdfDialog.vue'
 
 const $q = useQuasar()
 
 const props = defineProps({
   invoiceId: { type: String, default: '' },
+  fcxpId: { type: String, default: '' },
+  fcxpNotaId: { type: String, default: '' },
   items: { type: Array, default: null },
+  showPdf: { type: Boolean, default: true },
+  pdfTitle: { type: String, default: '' },
+  pdfFallbackName: { type: String, default: '' },
+})
+
+const documentId = computed(() => props.invoiceId || props.fcxpId)
+const canViewXml = computed(() => Boolean(documentId.value || (props.fcxpId && props.fcxpNotaId)))
+const isFcxp = computed(() => Boolean(props.fcxpId) && !props.invoiceId && !props.fcxpNotaId)
+const isFcxpNota = computed(() => Boolean(props.fcxpId && props.fcxpNotaId) && !props.invoiceId)
+const showPdfToolbar = computed(() => {
+  if (!props.showPdf) return false
+  if (props.invoiceId) return true
+  if (isFcxp.value || isFcxpNota.value) return true
+  return false
 })
 
 const loading = ref(false)
@@ -235,6 +270,9 @@ const sendingToClient = ref(false)
 const refreshingId = ref('')
 const loadingDetailId = ref('')
 const pdfDialogOpen = ref(false)
+const cxpPdfDialogOpen = ref(false)
+const cxpPdfTitle = ref('Documento')
+const cxpPdfLoader = ref(null)
 const responseDialogOpen = ref(false)
 const responseDetail = ref(null)
 const responseTab = ref('response')
@@ -266,19 +304,25 @@ const zipButtonLabel = computed(() => {
 })
 
 watch(
-  () => [props.invoiceId, props.items],
+  () => [props.invoiceId, props.fcxpId, props.fcxpNotaId, props.items],
   async () => {
     if (props.items) {
       submissions.value = props.items
       return
     }
-    if (!props.invoiceId) {
+    if (!documentId.value && !isFcxpNota.value) {
       submissions.value = []
       return
     }
     loading.value = true
     try {
-      submissions.value = await api.ventas.submissions(props.invoiceId)
+      if (isFcxpNota.value) {
+        submissions.value = await api.cuentasPagar.notas.submissions(props.fcxpId, props.fcxpNotaId)
+      } else {
+        submissions.value = isFcxp.value
+          ? await api.cuentasPagar.submissions(props.fcxpId)
+          : await api.ventas.submissions(props.invoiceId)
+      }
     } catch {
       submissions.value = []
     } finally {
@@ -334,11 +378,25 @@ function canRefreshSubmission(submission) {
 }
 
 async function openResponseDetail(submission) {
-  if (!props.invoiceId) return
+  if (!documentId.value && !isFcxpNota.value) return
   loadingDetailId.value = submission.id
   try {
-    responseDetail.value = await api.ventas.submissionDetail(props.invoiceId, submission.attemptNumber)
-    responseTab.value = 'response'
+    if (isFcxpNota.value) {
+      responseDetail.value = await api.cuentasPagar.notas.submissionDetail(
+        props.fcxpId,
+        props.fcxpNotaId,
+        submission.attemptNumber,
+      )
+    } else {
+      responseDetail.value = isFcxp.value
+        ? await api.cuentasPagar.submissionDetail(props.fcxpId, submission.attemptNumber)
+        : await api.ventas.submissionDetail(props.invoiceId, submission.attemptNumber)
+    }
+    responseTab.value = responseDetail.value?.hasResponseXml
+      ? 'response'
+      : responseDetail.value?.signedXml
+        ? 'signed'
+        : 'request'
     responseDialogOpen.value = true
   } catch (e) {
     $q.notify({ type: 'negative', message: e.message || 'No se pudo cargar la respuesta DIAN' })
@@ -400,8 +458,25 @@ async function downloadAttached(submission) {
 }
 
 function openPdf() {
-  if (!props.invoiceId) return
-  pdfDialogOpen.value = true
+  if (props.invoiceId) {
+    pdfDialogOpen.value = true
+    return
+  }
+  if (isFcxp.value) {
+    cxpPdfTitle.value = props.pdfTitle || 'Documento soporte'
+    cxpPdfLoader.value = () => api.cuentasPagar.fetchPdf(props.fcxpId)
+    cxpPdfDialogOpen.value = true
+    return
+  }
+  if (isFcxpNota.value) {
+    cxpPdfTitle.value = props.pdfTitle || 'Nota de ajuste'
+    cxpPdfLoader.value = () => api.cuentasPagar.notas.fetchPdf(
+      props.fcxpId,
+      props.fcxpNotaId,
+      props.pdfFallbackName || 'nota',
+    )
+    cxpPdfDialogOpen.value = true
+  }
 }
 
 async function downloadClientPackage() {

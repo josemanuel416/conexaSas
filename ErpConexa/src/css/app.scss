@@ -28,6 +28,42 @@
   flex-direction: column;
 }
 
+.company-form-dialog--cxp-notas-list {
+  width: 92vw;
+  max-width: 1480px;
+  max-height: 90vh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.company-form-dialog--cxp-nota-form {
+  width: 92vw;
+  max-width: 1280px;
+  max-height: 92vh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.company-form-dialog__body--cxp-notas-list,
+.company-form-dialog__body--cxp-nota-form {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 28px;
+}
+
+.company-form-dialog__body--cxp-nota-form {
+  padding: 18px 24px 12px;
+}
+
+.company-form-dialog__actions--wrap {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .company-form-dialog__body--document-view {
   flex: 1 1 auto;
   min-height: 0;
@@ -459,6 +495,11 @@
 .client-form-grid .f-ciudad { grid-column: span 4; }
 .client-form-grid .f-dane { grid-column: span 2; }
 .client-form-grid .f-pais { grid-column: span 2; }
+.client-form-grid .f-doc-soporte {
+  grid-column: 1 / -1;
+  align-self: center;
+  white-space: nowrap;
+}
 
 .client-form-grid:not(:has(.f-dv)) .f-numero { grid-column: span 3; }
 .client-form-grid:not(:has(.f-dv)) .f-iva { grid-column: span 4; }
@@ -475,7 +516,8 @@
   }
 
   .client-form-grid .f-direccion,
-  .client-form-grid .f-iva {
+  .client-form-grid .f-iva,
+  .client-form-grid .f-doc-soporte {
     grid-column: span 2 !important;
   }
 }

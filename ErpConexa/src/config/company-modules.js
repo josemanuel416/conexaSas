@@ -67,6 +67,12 @@ export const MODULE_MENUS = {
       { label: 'Impuestos', icon: 'percent', to: '/contabilidad/configuracion', query: { tab: 'impuestos' } },
     ],
   },
+  cuentas_pagar: {
+    items: [
+      { label: 'Cuentas por pagar', icon: 'payments', to: '/cuentas-pagar' },
+      { label: 'Conceptos notas', icon: 'topic', to: '/cuentas-pagar/configuracion' },
+    ],
+  },
 }
 
 /** Configuración avanzada inventario */
@@ -121,6 +127,7 @@ export function getSectionMenuForPath(path = '') {
   if (path.startsWith('/caja')) return MODULE_MENUS.caja?.items || []
   if (path.startsWith('/inventario')) return MODULE_MENUS.inventario?.items || []
   if (path.startsWith('/contabilidad')) return MODULE_MENUS.contabilidad?.items || []
+  if (path.startsWith('/cuentas-pagar')) return MODULE_MENUS.cuentas_pagar?.items || []
   if (path.startsWith('/users')) {
     return [{ label: 'Usuarios', icon: 'people', to: '/users' }]
   }

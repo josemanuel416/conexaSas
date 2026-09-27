@@ -1,4 +1,6 @@
 # Reinicia ServerFEpos (servicio Windows o ventana Node local)
+param([switch]$ForceReload)
+
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 . "$PSScriptRoot\windows-services\_service-helper.ps1"
@@ -9,7 +11,7 @@ if (Test-Path "$Root\ServerFEpos\.env") {
   if ($m) { $Port = [int]$m.Matches.Groups[1].Value }
 }
 
-if (Ensure-ConexaWindowsService 'ConexaFEpos' $Port '/health') {
+if (-not $ForceReload -and (Ensure-ConexaWindowsService 'ConexaFEpos' $Port '/health')) {
   Start-Sleep -Seconds 3
   $healthUrl = "http://127.0.0.1:$Port/health"
   try {
@@ -20,6 +22,15 @@ if (Ensure-ConexaWindowsService 'ConexaFEpos' $Port '/health') {
     Write-Host "  Log: Scripts\windows-services\logs\fepos-error.log" -ForegroundColor DarkGray
   }
   exit 0
+}
+
+if ($ForceReload) {
+  Write-Host "Recargando ServerFEpos (ForceReload)..." -ForegroundColor Yellow
+  if (Test-ConexaWindowsService 'ConexaFEpos') {
+    try { Stop-Service -Name 'ConexaFEpos' -Force -ErrorAction Stop } catch {
+      Write-Host "  No se pudo detener servicio Windows (¿admin?). Cerrando puerto $Port..." -ForegroundColor Yellow
+    }
+  }
 }
 
 Write-Host "Deteniendo procesos en puerto $Port..." -ForegroundColor Yellow

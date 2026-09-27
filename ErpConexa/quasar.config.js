@@ -13,14 +13,41 @@ function readApiDevPort() {
   try {
     const runtime = path.join(__dirname, '../Sever.Conexa/.runtime-port')
     const parsed = Number(fs.readFileSync(runtime, 'utf8').trim())
-    return parsed > 0 ? parsed : preferred
+    if (parsed > 0) return parsed
   } catch {
-    return preferred
+    // sin archivo runtime-port
   }
+  return preferred
 }
 
 const apiDevPort = readApiDevPort()
 const apiDevTarget = `http://127.0.0.1:${apiDevPort}`
+
+function apiDevProxyEntry() {
+  const preferred = Number(process.env.VITE_API_PORT) || 3500
+  return {
+    target: apiDevTarget,
+    changeOrigin: true,
+    configure: (proxy) => {
+      proxy.on('proxyReq', (_proxyReq, _req, _res, options) => {
+        options.target = `http://127.0.0.1:${readApiDevPort()}`
+      })
+      proxy.on('error', (err, _req, res) => {
+        const refused = err?.code === 'ECONNREFUSED' || err?.code === 'ECONNRESET'
+        const runtimePort = readApiDevPort()
+        if (refused && runtimePort !== preferred) {
+          console.warn(`[proxy] Puerto ${runtimePort} no responde; intente .\\Scripts\\restart-api.ps1`)
+        }
+        if (res && !res.headersSent) {
+          res.writeHead(502, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({
+            error: 'La API no respondió (502). Ejecute .\\Scripts\\restart-api.ps1 y recargue la página (F5).',
+          }))
+        }
+      })
+    },
+  }
+}
 
 export default defineConfig((/* ctx */) => {
   return {
@@ -87,16 +114,8 @@ export default defineConfig((/* ctx */) => {
       port: 9500,
       open: false,
       proxy: {
-        '/api': {
-          target: apiDevTarget,
-          changeOrigin: true,
-          router: () => `http://127.0.0.1:${readApiDevPort()}`,
-        },
-        '/assets': {
-          target: apiDevTarget,
-          changeOrigin: true,
-          router: () => `http://127.0.0.1:${readApiDevPort()}`,
-        },
+        '/api': apiDevProxyEntry(),
+        '/assets': apiDevProxyEntry(),
       },
     },
 

@@ -71,12 +71,12 @@ const certUpload = multer({
 const SALES_KINDS = ['cotizacion', 'prefactura'];
 const DIAN_SENT_STATUSES = ['enviada_dian', 'aprobada_dian', 'rechazada_dian'];
 
-async function findActiveResolutionConflict(companyId, documentType, excludeId = null) {
-  const values = [companyId, documentType || '01'];
+async function findActiveResolutionConflict(companyId, documentType, excludeId = null, documentProcess = 'FV') {
+  const values = [companyId, documentType || '01', documentProcess || 'FV'];
   let sql = `
-    SELECT id, resolution_number, prefix, document_type
+    SELECT id, resolution_number, prefix, document_type, document_process
     FROM dian_resolutions
-    WHERE company_id = $1 AND document_type = $2 AND is_active = true
+    WHERE company_id = $1 AND document_type = $2 AND document_process = $3 AND is_active = true
   `;
   if (excludeId) {
     values.push(excludeId);
@@ -87,9 +87,67 @@ async function findActiveResolutionConflict(companyId, documentType, excludeId =
   return rows[0] || null;
 }
 
+async function validateResolutionKeys({
+  companyId,
+  prefix,
+  resolutionNumber,
+  documentProcess,
+  dianEnvironment,
+  excludeId = null,
+}) {
+  const normPrefix = String(prefix || '').trim().toUpperCase();
+  const normNumber = String(resolutionNumber || '').trim();
+  const process = documentProcess || 'FV';
+  let excludeSql = '';
+  if (excludeId) {
+    excludeSql = ' AND id != $3';
+  }
+
+  if (dianEnvironment === 'pruebas') {
+    const { rows: samePair } = await pool.query(
+      `SELECT document_process FROM dian_resolutions
+       WHERE company_id = $1 AND resolution_number = $2 AND prefix = $3
+         AND document_process = $4 AND dian_environment = 'pruebas'${excludeId ? ' AND id != $5' : ''}`,
+      excludeId
+        ? [companyId, normNumber, normPrefix, process, excludeId]
+        : [companyId, normNumber, normPrefix, process],
+    );
+    if (samePair[0]) {
+      return `Ya existe una resolución de ${process === 'DS' ? 'documento soporte' : 'facturación'} con ese número y prefijo`;
+    }
+    return null;
+  }
+
+  const { rows: prefixRows } = await pool.query(
+    `SELECT prefix FROM dian_resolutions
+     WHERE company_id = $1 AND prefix = $2${excludeSql}`,
+    excludeId ? [companyId, normPrefix, excludeId] : [companyId, normPrefix],
+  );
+  if (prefixRows[0]) {
+    return `El prefijo ${normPrefix} ya está registrado. En habilitación y producción el prefijo DS debe ser distinto al de FV`;
+  }
+
+  const { rows: numberRows } = await pool.query(
+    `SELECT resolution_number FROM dian_resolutions
+     WHERE company_id = $1 AND resolution_number = $2${excludeSql}`,
+    excludeId ? [companyId, normNumber, excludeId] : [companyId, normNumber],
+  );
+  if (numberRows[0]) {
+    return `El número de resolución ${normNumber} ya está registrado`;
+  }
+  return null;
+}
+
 function activeResolutionConflictMessage(conflict) {
-  const tipo = conflict.document_type === '91' ? 'nota crÃ©dito' : 'factura';
-  return `Ya existe una resoluciÃ³n activa de ${tipo} (${conflict.prefix} â€” ${conflict.resolution_number}). DesactÃ­vela antes de activar otra.`;
+  const proc = conflict.document_process === 'DS' ? 'documento soporte' : 'factura';
+  const tipo = conflict.document_type === '91'
+    ? 'nota crédito'
+    : conflict.document_type === '95'
+      ? 'nota ajuste DS'
+      : conflict.document_type === '05'
+        ? 'documento soporte'
+        : 'factura';
+  return `Ya existe una resolución activa de ${proc} (${tipo}, ${conflict.prefix} — ${conflict.resolution_number}). Desactívela antes de activar otra.`;
 }
 
 function isFePosSubmissionPending(fePosResult) {
@@ -133,6 +191,7 @@ function formatResolution(r) {
     validTo: r.valid_to,
     technicalKey: r.technical_key,
     documentType: r.document_type,
+    documentProcess: r.document_process || 'FV',
     dianEnvironment: r.dian_environment,
     isActive: r.is_active,
     notes: r.notes,
@@ -1211,13 +1270,14 @@ router.post('/clients', requirePermission('ventas.clientes'), async (req, res) =
          company_id, document_type, document_number, verification_digit,
          person_type, tax_level_code, business_name,
          first_name, middle_name, last_name, phone, email, address,
-         city_code, city_name, department_code, department_name, country_code
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING *`,
+         city_code, city_name, department_code, department_name, country_code, maneja_doc_soporte
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING *`,
       [
         req.user.companyId, p.documentType, p.documentNumber, p.verificationDigit,
         p.personType, p.taxLevelCode, p.businessName,
         p.firstName, p.middleName, p.lastName, p.phone, p.email, p.address,
         p.cityCode, p.cityName, p.departmentCode, p.departmentName, p.countryCode,
+        p.manejaDocSoporte,
       ]
     );
     res.status(201).json({
@@ -1255,14 +1315,15 @@ router.put('/clients/:id', requirePermission('ventas.clientes'), async (req, res
          department_name = $16,
          country_code = $17,
          is_active = COALESCE($18, is_active),
+         maneja_doc_soporte = COALESCE($19, maneja_doc_soporte),
          updated_at = NOW()
-       WHERE id = $19 AND company_id = $20 RETURNING *`,
+       WHERE id = $20 AND company_id = $21 RETURNING *`,
       [
         p.documentType, p.documentNumber, p.verificationDigit,
         p.personType, p.taxLevelCode, p.businessName,
         p.firstName, p.middleName, p.lastName, p.phone, p.email, p.address,
         p.cityCode, p.cityName, p.departmentCode, p.departmentName, p.countryCode,
-        req.body.isActive, req.params.id, req.user.companyId,
+        req.body.isActive, req.body.manejaDocSoporte, req.params.id, req.user.companyId,
       ]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Cliente no encontrado' });
@@ -1376,9 +1437,13 @@ router.put('/services/:id', requirePermission('ventas.servicios'), async (req, r
 });
 
 router.get('/resolutions', requirePermission('ventas.acceso'), async (req, res) => {
-  const { documentType } = req.query;
+  const { documentType, documentProcess } = req.query;
   const values = [req.user.companyId];
   let sql = `SELECT * FROM dian_resolutions WHERE company_id = $1`;
+  if (documentProcess) {
+    values.push(documentProcess);
+    sql += ` AND document_process = $${values.length}`;
+  }
   if (documentType) {
     values.push(documentType);
     sql += ` AND document_type = $${values.length}`;
@@ -1700,7 +1765,7 @@ router.delete('/dian-certificate', requirePermission('ventas.acceso', 'ventas.re
 router.post('/resolutions', requirePermission('ventas.resoluciones'), async (req, res) => {
   const {
     resolutionNumber, prefix, rangeFrom, rangeTo, resolutionDate, validFrom, validTo,
-    technicalKey, documentType, dianEnvironment, notes,
+    technicalKey, documentType, documentProcess, dianEnvironment, notes,
   } = req.body;
 
   if (!resolutionNumber || !prefix || !rangeFrom || !rangeTo || !resolutionDate || !validFrom || !validTo) {
@@ -1720,9 +1785,21 @@ router.post('/resolutions', requirePermission('ventas.resoluciones'), async (req
   }
 
   const docType = documentType || '01';
+  const docProcess = documentProcess || (docType === '05' ? 'DS' : 'FV');
+  const env = dianEnvironment || 'habilitacion';
   const willBeActive = req.body.isActive !== false;
+  const keyError = await validateResolutionKeys({
+    companyId: req.user.companyId,
+    prefix,
+    resolutionNumber,
+    documentProcess: docProcess,
+    dianEnvironment: env,
+  });
+  if (keyError) {
+    return res.status(409).json({ error: keyError });
+  }
   if (willBeActive) {
-    const conflict = await findActiveResolutionConflict(req.user.companyId, docType);
+    const conflict = await findActiveResolutionConflict(req.user.companyId, docType, null, docProcess);
     if (conflict) {
       return res.status(409).json({ error: activeResolutionConflictMessage(conflict) });
     }
@@ -1732,17 +1809,24 @@ router.post('/resolutions', requirePermission('ventas.resoluciones'), async (req
     const { rows } = await pool.query(
       `INSERT INTO dian_resolutions (
          company_id, resolution_number, prefix, range_from, range_to, current_consecutive,
-         resolution_date, valid_from, valid_to, technical_key, document_type, dian_environment, is_active, notes
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,
+         resolution_date, valid_from, valid_to, technical_key, document_type, document_process,
+         dian_environment, is_active, notes
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *`,
       [
         req.user.companyId, resolutionNumber, prefix.toUpperCase(), rangeFrom, rangeTo,
         Number(rangeFrom) - 1, resolutionDate, validFrom, validTo, technicalKey || null,
-        docType, dianEnvironment || 'habilitacion', willBeActive, notes || null,
+        docType, docProcess, env, willBeActive, notes || null,
       ]
     );
     res.status(201).json(formatResolution(rows[0]));
   } catch (err) {
-    if (err.code === '23505') return res.status(409).json({ error: 'ResoluciÃ³n o prefijo ya registrado' });
+    if (err.code === '23505') {
+      return res.status(409).json({
+        error: env === 'pruebas'
+          ? 'Ya existe una resolución de ese proceso con el mismo número y prefijo'
+          : 'Resolución o prefijo ya registrado',
+      });
+    }
     throw err;
   }
 });
@@ -1769,14 +1853,27 @@ router.put('/resolutions/:id', requirePermission('ventas.resoluciones'), async (
   }
 
   const docType = req.body.documentType || existing.document_type;
+  const docProcess = req.body.documentProcess || existing.document_process || 'FV';
   const willBeActive = req.body.isActive !== undefined ? Boolean(req.body.isActive) : existing.is_active;
+  const keyError = await validateResolutionKeys({
+    companyId: req.user.companyId,
+    prefix: req.body.prefix || existing.prefix,
+    resolutionNumber: req.body.resolutionNumber || existing.resolution_number,
+    documentProcess: docProcess,
+    dianEnvironment: env,
+    excludeId: req.params.id,
+  });
+  if (keyError) {
+    return res.status(409).json({ error: keyError });
+  }
   if (willBeActive) {
-    const conflict = await findActiveResolutionConflict(req.user.companyId, docType, req.params.id);
+    const conflict = await findActiveResolutionConflict(req.user.companyId, docType, req.params.id, docProcess);
     if (conflict) {
       return res.status(409).json({ error: activeResolutionConflictMessage(conflict) });
     }
   }
 
+  try {
   const { rows } = await pool.query(
     `UPDATE dian_resolutions SET
        resolution_number = COALESCE($1, resolution_number),
@@ -1788,19 +1885,30 @@ router.put('/resolutions/:id', requirePermission('ventas.resoluciones'), async (
        valid_to = COALESCE($7, valid_to),
        technical_key = COALESCE($8, technical_key),
        document_type = COALESCE($9, document_type),
-       dian_environment = COALESCE($10, dian_environment),
-       is_active = COALESCE($11, is_active),
-       notes = COALESCE($12, notes),
+       document_process = COALESCE($10, document_process),
+       dian_environment = COALESCE($11, dian_environment),
+       is_active = COALESCE($12, is_active),
+       notes = COALESCE($13, notes),
        updated_at = NOW()
-     WHERE id = $13 AND company_id = $14 RETURNING *`,
+     WHERE id = $14 AND company_id = $15 RETURNING *`,
     [
       req.body.resolutionNumber, req.body.prefix?.toUpperCase(), req.body.rangeFrom, req.body.rangeTo,
       req.body.resolutionDate, req.body.validFrom, req.body.validTo, req.body.technicalKey,
-      req.body.documentType, req.body.dianEnvironment, req.body.isActive, req.body.notes,
+      req.body.documentType, req.body.documentProcess, req.body.dianEnvironment, req.body.isActive, req.body.notes,
       req.params.id, req.user.companyId,
     ]
   );
   res.json(formatResolution(rows[0]));
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({
+        error: env === 'pruebas'
+          ? 'Ya existe una resolución de ese proceso con el mismo número y prefijo'
+          : 'Resolución o prefijo ya registrado',
+      });
+    }
+    throw err;
+  }
 });
 
 // --- Cotizaciones / Prefacturas ---

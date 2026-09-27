@@ -541,7 +541,7 @@ async function loadTaxRate(companyId, id) {
 }
 
 // --- Impuestos (padre) ---
-router.get('/taxes', requirePermission('contabilidad.acceso', 'contabilidad.impuestos'), async (req, res) => {
+router.get('/taxes', requirePermission('contabilidad.acceso', 'contabilidad.impuestos', 'cuentas_pagar.acceso', 'cuentas_pagar.registrar'), async (req, res) => {
   const { rows } = await pool.query(
     `SELECT * FROM accounting_taxes WHERE company_id = $1 ORDER BY code`,
     [req.user.companyId],
@@ -589,7 +589,7 @@ router.put('/taxes/:id', requirePermission('contabilidad.impuestos'), async (req
 });
 
 // --- Clases de impuesto ---
-router.get('/tax-classes', requirePermission('contabilidad.acceso', 'contabilidad.impuestos'), async (req, res) => {
+router.get('/tax-classes', requirePermission('contabilidad.acceso', 'contabilidad.impuestos', 'cuentas_pagar.acceso', 'cuentas_pagar.registrar'), async (req, res) => {
   const params = [req.user.companyId];
   let sql = `SELECT tc.*, t.code AS tax_code, t.name AS tax_name
      FROM accounting_tax_classes tc
@@ -650,7 +650,7 @@ router.put('/tax-classes/:id', requirePermission('contabilidad.impuestos'), asyn
 });
 
 // --- Vigencias de impuesto ---
-router.get('/tax-rates', requirePermission('contabilidad.acceso', 'contabilidad.impuestos'), async (req, res) => {
+router.get('/tax-rates', requirePermission('contabilidad.acceso', 'contabilidad.impuestos', 'cuentas_pagar.acceso', 'cuentas_pagar.registrar'), async (req, res) => {
   const params = [req.user.companyId];
   let sql = `SELECT tr.*,
                     t.code AS tax_code, t.name AS tax_name,

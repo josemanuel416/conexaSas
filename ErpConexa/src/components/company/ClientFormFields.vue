@@ -187,6 +187,14 @@
       hide-bottom-space
       bg-color="grey-2"
     />
+    <q-checkbox
+      v-model="model.manejaDocSoporte"
+      class="f-doc-soporte"
+      label="Documento soporte DIAN"
+      dense
+    >
+      <q-tooltip>Marque si el tercero es un proveedor no obligado a facturar electrónicamente</q-tooltip>
+    </q-checkbox>
   </div>
 </template>
 

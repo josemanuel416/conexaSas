@@ -108,6 +108,10 @@ async function migrate() {
   await runSqlFile('036_accounting_reports_permission.sql');
   await runSqlFile('037_public_site_support.sql');
   await runSqlFile('038_site_landing_copy.sql');
+  await runSqlFile('039_cuentas_pagar.sql');
+  await runSqlFile('040_resoluciones_pruebas_fv_ds.sql');
+  await runSqlFile('041_fcxp_notas.sql');
+  await runSqlFile('042_cndbcr_conceptos.sql');
   await seedDaneLocations();
   await seedAdmin();
   await seedConexaSoftCompany();

@@ -68,6 +68,14 @@ const routes = [
         component: () => import('pages/company/caja/CajaPage.vue'),
       },
       {
+        path: 'cuentas-pagar',
+        component: () => import('pages/company/cuentas-pagar/CuentasPagarPage.vue'),
+      },
+      {
+        path: 'cuentas-pagar/configuracion',
+        component: () => import('pages/company/cuentas-pagar/ConfigCuentasPagarPage.vue'),
+      },
+      {
         path: 'inventario',
         component: () => import('pages/company/inventario/InventarioPage.vue'),
       },

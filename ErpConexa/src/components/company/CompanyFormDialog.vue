@@ -2,7 +2,7 @@
   <q-dialog
     :model-value="modelValue"
     persistent
-    :full-width="client || dianEmitter || dianResolution || salesDocument || creditNote || documentView"
+    :full-width="client || dianEmitter || dianResolution || salesDocument || creditNote || documentView || cxpNotasList || cxpNotaForm"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <q-card bordered class="company-form-dialog" :class="dialogClass">
@@ -37,6 +37,8 @@
           'company-form-dialog__body--sales-document': salesDocument,
           'company-form-dialog__body--credit-note': creditNote,
           'company-form-dialog__body--document-view': documentView,
+          'company-form-dialog__body--cxp-notas-list': cxpNotasList,
+          'company-form-dialog__body--cxp-nota-form': cxpNotaForm,
         }"
       >
         <slot />
@@ -47,7 +49,10 @@
         <q-card-actions
           align="right"
           class="company-form-dialog__actions"
-          :class="client ? 'q-pa-sm' : 'q-pa-md'"
+          :class="[
+            client ? 'q-pa-sm' : 'q-pa-md',
+            { 'company-form-dialog__actions--wrap': actionsWrap },
+          ]"
         >
           <slot name="actions" />
         </q-card-actions>
@@ -71,6 +76,9 @@ const props = defineProps({
   salesDocument: { type: Boolean, default: false },
   creditNote: { type: Boolean, default: false },
   documentView: { type: Boolean, default: false },
+  cxpNotasList: { type: Boolean, default: false },
+  cxpNotaForm: { type: Boolean, default: false },
+  actionsWrap: { type: Boolean, default: false },
 })
 
 defineEmits(['update:modelValue'])
@@ -83,5 +91,7 @@ const dialogClass = computed(() => ({
   'company-form-dialog--sales-document': props.salesDocument,
   'company-form-dialog--credit-note': props.creditNote,
   'company-form-dialog--document-view': props.documentView,
+  'company-form-dialog--cxp-notas-list': props.cxpNotasList,
+  'company-form-dialog--cxp-nota-form': props.cxpNotaForm,
 }))
 </script>
