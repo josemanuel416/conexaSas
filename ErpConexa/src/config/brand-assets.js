@@ -9,6 +9,7 @@ export const BRAND_ASSETS = {
   logoDark: '/brand/conexasoft-logo-dark.svg',
   logoDarkPng: '/brand/conexasoft-logo-dark.png',
   brandLogin: '/brand/conexasoft-brand-login.png',
+  error404: '/brand/error-404.jpg',
 }
 
 export const BRAND_TAGLINE = 'ERP sólido hoy. Gestión inteligente sobre datos reales.'

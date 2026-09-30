@@ -1,0 +1,137 @@
+[
+  {
+    "id": "proc-cotizacion",
+    "kind": "proceso",
+    "module": "ventas",
+    "title": "Crear, confirmar y clonar una cotización",
+    "summary": "Propuesta comercial con líneas, vigencia y copia.",
+    "keywords": ["cotizacion", "clonar", "copiar", "vigencia", "confirmar", "borrador"],
+    "body": "1. Entre a Cotización y pulse Nueva cotización.\n2. Elija el cliente, la fecha válida hasta, los ítems y las observaciones.\n3. Guarde el borrador o emita el documento.\n4. Confirme la cotización cuando el cliente la acepte. El PDF queda firmado por quien la elaboró, si ese usuario tiene firma.\n\nPara clonar, abra una cotización que no esté anulada y use Clonar. El sistema abre un documento nuevo con las mismas líneas y notas. La fecha de emisión queda en hoy y la vigencia conserva la misma cantidad de días. Puede cambiar el cliente antes de guardar. El original no se modifica y el elaborador de la copia es quien la guarda."
+  },
+  {
+    "id": "proc-factura",
+    "kind": "proceso",
+    "module": "facturacion",
+    "title": "Emitir una factura electrónica",
+    "summary": "De prefactura o factura borrador al envío DIAN.",
+    "keywords": ["factura electronica", "emitir", "dian", "resolucion", "prefactura", "enviar"],
+    "body": "1. Tenga una resolución de factura (tipo 01) activa, con prefijo y rango disponible.\n2. Cree la factura desde Factura, conviértala desde una prefactura o genérela desde una salida de inventario por venta.\n3. Revise cliente, líneas, IVA y medio de pago.\n4. Envíe el documento a la DIAN. El estado pasa por pendiente, aprobado o rechazado.\n5. Si la DIAN aprueba, el PDF y el XML quedan disponibles para entregar al cliente.\n\nEl ambiente (habilitación, pruebas o producción) lo define la configuración de la compañía, no el usuario en cada factura."
+  },
+  {
+    "id": "proc-compra-cxp",
+    "kind": "proceso",
+    "module": "inventario",
+    "title": "Entrada por compra y cuenta por pagar",
+    "summary": "Al confirmar la compra se crea la CxP del proveedor.",
+    "keywords": ["compra", "proveedor", "entrada", "cxp", "n factura", "vencimiento", "lote proveedor"],
+    "body": "Use el tipo de movimiento indicado en la variable Compras a proveedores. Por defecto es 01, Entradas por compras.\n\n1. Cree el movimiento de entrada y elija ese tipo.\n2. Indique proveedor, N. factura, fecha de generación y fecha de vencimiento. El vencimiento no puede ser anterior a la generación.\n3. Agregue artículos, cantidad, costo y, si el artículo lo exige, lote del proveedor y vencimiento del lote.\n4. Guarde el borrador. Puede abrir la fila, cambiar líneas y volver a guardar.\n5. Confirme. El sistema aumenta existencias y crea la cuenta por pagar confirmada con el mismo número de factura, fechas y valor.\n\nSi el proveedor maneja documento soporte, hace falta una resolución DS activa. Si ya existe una CxP vigente con esa N. factura para el mismo proveedor, la confirmación se detiene y la entrada no queda confirmada."
+  },
+  {
+    "id": "proc-lote-proveedor",
+    "kind": "proceso",
+    "module": "inventario",
+    "title": "Lote del proveedor en una entrada",
+    "summary": "Dónde se escribe y cuándo nace el lote interno.",
+    "keywords": ["lote", "lote proveedor", "lote interno", "vencimiento", "entrada"],
+    "body": "En una entrada, el lote del proveedor es el número que trae la mercancía. Se escribe en la línea, en la columna Lote prov., y queda guardado en el detalle del movimiento.\n\nEl lote interno lo asigna el sistema al confirmar la entrada, no mientras el documento está en borrador. Por eso, antes de confirmar, el detalle muestra el lote del proveedor y todavía no un lote interno.\n\nSi el artículo está marcado como sin lote de proveedor, esa columna no se pide. Si exige vencimiento, también debe diligenciar la fecha Vence.\n\nAbra la fila del borrador, escriba el lote y pulse Guardar ítems. Al volver a expandir la fila, el número debe seguir visible."
+  },
+  {
+    "id": "proc-traslado",
+    "kind": "proceso",
+    "module": "inventario",
+    "title": "Trasladar mercancía entre bodegas",
+    "summary": "La salida confirmada crea la entrada en la bodega destino.",
+    "keywords": ["traslado", "bodega destino", "salida por traslado", "recepcion"],
+    "body": "1. Cree un movimiento con el tipo de salida por traslado.\n2. Elija la bodega de origen y la bodega destino.\n3. En cada línea seleccione el lote y una cantidad que no supere la existencia.\n4. Confirme.\n\nLa confirmación descuenta la bodega origen y crea la entrada de recepción en la bodega destino, con el tipo configurado como traslado de entrada. Los códigos por defecto son 09 para la salida y 10 para la recepción. Puede cambiarlos en Variables de inventario."
+  },
+  {
+    "id": "proc-salida-venta",
+    "kind": "proceso",
+    "module": "inventario",
+    "title": "Salida por venta y factura desde inventario",
+    "summary": "Descuenta stock y puede generar el documento de venta.",
+    "keywords": ["salida por venta", "precio venta", "generar factura", "stock"],
+    "body": "1. Cree una salida con el tipo configurado como salida por venta. El código por defecto es 02.\n2. Elija el cliente, el lote con existencia y el precio de venta de cada línea.\n3. Confirme para descontar el stock al costo del lote.\n4. En el movimiento confirmado use Generar factura si todavía no tiene documento de venta.\n\nPuede generar una prefactura o una factura DIAN en borrador, según el permiso y la resolución disponible."
+  },
+  {
+    "id": "proc-caja",
+    "kind": "proceso",
+    "module": "caja",
+    "title": "Abrir caja y registrar un recibo",
+    "summary": "Turno, ingresos, egresos y cierre.",
+    "keywords": ["abrir caja", "cerrar caja", "recibo", "ingreso", "egreso", "turno"],
+    "body": "1. Verifique que exista una caja activa.\n2. En Operación abra el turno con el saldo inicial.\n3. Registre ingresos y egresos. Cada recibo queda en la sesión abierta.\n4. Al terminar, cuente el dinero y cierre la sesión. El sistema compara el esperado con lo contado.\n\nNo se registran movimientos de esa caja mientras el turno esté cerrado. El historial conserva las sesiones anteriores."
+  },
+  {
+    "id": "proc-cxp-manual",
+    "kind": "proceso",
+    "module": "cuentas_pagar",
+    "title": "Registrar una cuenta por pagar",
+    "summary": "Factura de proveedor, confirmación y documento soporte.",
+    "keywords": ["registrar cxp", "factura proveedor", "documento soporte", "confirmar cxp"],
+    "body": "1. Entre a Cuentas por pagar y cree el documento.\n2. Indique proveedor, número de factura, fecha de la factura, vencimiento y líneas.\n3. Guarde en borrador y confirme cuando los datos estén completos.\n\nSi el proveedor maneja documento soporte, la confirmación exige una resolución DS tipo 05 activa y asigna el consecutivo. Una CxP generada desde una compra de inventario ya nace confirmada: no hace falta crearla otra vez."
+  },
+  {
+    "id": "proc-asiento",
+    "kind": "proceso",
+    "module": "contabilidad",
+    "title": "Registrar un comprobante y cerrar el mes",
+    "summary": "Asiento manual y cierre del periodo.",
+    "keywords": ["asiento", "comprobante", "cerrar mes", "periodo", "debito", "credito"],
+    "body": "1. Abra Movimiento diario y elija el tipo de comprobante y el periodo abierto.\n2. Agregue líneas con cuenta, tercero si aplica, débito y crédito. El comprobante debe cuadrar.\n3. Contabilice el documento.\n\nPara cerrar el mes entre a Cierre de mes y cierre el periodo. Un periodo cerrado no recibe comprobantes nuevos. Las ventas, la caja y el inventario no crean este asiento de forma automática."
+  },
+  {
+    "id": "proc-cita",
+    "kind": "proceso",
+    "module": "agenda_citas",
+    "title": "Agendar una cita",
+    "summary": "Profesional, horario y estado de la cita.",
+    "keywords": ["agendar", "cita", "reagendar", "cumplida", "profesional"],
+    "body": "1. Verifique que el profesional, el servicio y el cliente existan.\n2. En Agenda elija fecha, hora y profesional según el modelo de horario.\n3. Guarde la cita.\n4. Cuando se atienda, márquela cumplida. Si cambia de fecha, regístrela como reagendada.\n\nDesde las citas facturadas puede seguir el paso al documento de venta."
+  },
+  {
+    "id": "proc-prefactura",
+    "kind": "proceso",
+    "module": "ventas",
+    "title": "Elaborar una prefactura",
+    "summary": "Documento previo que queda listo para convertirse en factura DIAN.",
+    "keywords": ["prefactura", "prefacturas", "emitir", "convertir", "borrador"],
+    "body": "La prefactura arma el documento de venta antes de la factura electrónica. Elija cliente, vencimiento y líneas, guarde el borrador y emítala. Al emitir queda lista para convertirla en factura DIAN desde Facturación."
+  },
+  {
+    "id": "proc-nota-credito",
+    "kind": "proceso",
+    "module": "facturacion",
+    "title": "Registrar una nota crédito",
+    "summary": "Disminuye el valor de una factura electrónica ya emitida.",
+    "keywords": ["nota credito", "notas credito", "anular factura", "devolucion"],
+    "body": "La nota crédito (tipo 91) corrige o disminuye una factura. Se elabora desde Notas crédito, con la factura de origen y el concepto. Luego se envía a la DIAN. Si la factura tiene notas parciales, el saldo restante se ajusta con otra nota, no con anulación automática."
+  },
+  {
+    "id": "proc-seguimiento-dian",
+    "kind": "proceso",
+    "module": "facturacion",
+    "title": "Seguir el envío a la DIAN",
+    "summary": "Consulta el estado, la respuesta y el reintento del documento electrónico.",
+    "keywords": ["seguimiento dian", "rechazada", "aprobada", "reintentar", "cufe"],
+    "body": "En Seguimiento DIAN ve cada envío: pendiente, aprobado o rechazado, con el mensaje de la DIAN. Si fue rechazado, corrija la causa y reintente. Un documento aprobado conserva CUFE o CUDE y permite entregar PDF y XML."
+  },
+  {
+    "id": "proc-existencias",
+    "kind": "proceso",
+    "module": "inventario",
+    "title": "Consultar existencias",
+    "summary": "Stock por bodega, artículo y lote.",
+    "keywords": ["existencias", "stock", "saldo", "cantidad"],
+    "body": "Existencias muestra la cantidad disponible y el costo de compra por bodega, artículo y lote. Puede filtrar por bodega y exportar a PDF o Excel. El saldo cambia solo cuando se confirma un movimiento, no mientras está en borrador."
+  },
+  {
+    "id": "proc-catalogo-inventario",
+    "kind": "proceso",
+    "module": "inventario",
+    "title": "Configurar bodegas, artículos y tipos",
+    "summary": "Catálogos necesarios antes de mover inventario.",
+    "keywords": ["bodega", "articulo", "tipo de articulo", "tipo de movimiento", "variables inventario"],
+    "body": "Antes de registrar movimientos cree al menos una bodega, con código y prefijo de consecutivos. Luego cree los artículos. El tipo de movimiento define si es entrada o salida. En Variables de inventario se elige qué código es compra, venta o traslado."
+  }
+]

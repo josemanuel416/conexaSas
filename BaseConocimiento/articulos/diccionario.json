@@ -1,0 +1,65 @@
+[
+  {
+    "id": "dic-compania",
+    "kind": "diccionario",
+    "module": "usuarios",
+    "title": "Diccionario: compañía, usuarios y permisos",
+    "summary": "Tablas que aislan cada empresa y sus accesos.",
+    "keywords": ["companies", "users", "permissions", "company_modules", "firma", "diccionario"],
+    "body": "companies guarda la empresa: nombre, NIT, ambiente DIAN y datos del emisor.\ncompany_modules indica qué módulos tiene contratados.\nusers son las personas que entran. company_id vacío identifica al superadministrador. signature_path guarda la firma impresa en los documentos.\npermissions y user_permissions definen qué puede hacer cada usuario dentro de su compañía.\ncompany_system_variables guarda parámetros como los códigos de movimiento de inventario."
+  },
+  {
+    "id": "dic-ventas",
+    "kind": "diccionario",
+    "module": "facturacion",
+    "title": "Diccionario: clientes, facturas y DIAN",
+    "summary": "Tablas de terceros, documentos de venta y envíos.",
+    "keywords": ["invoices", "clients", "dian_resolutions", "cufe", "invoice_details", "diccionario"],
+    "body": "clients es el tercero: cliente o proveedor. Incluye documento, razón social y si maneja documento soporte.\ninvoices guarda cotizaciones, prefacturas, facturas y notas. document_kind distingue el tipo. El estado recorre borrador, emitida, enviada y la respuesta DIAN.\ninvoice_details son las líneas: cantidad, precio, IVA y total.\ndian_resolutions numeran facturas (01), notas crédito (91) y documento soporte (05).\ndian_submissions conserva cada intento de envío, el XML y la respuesta."
+  },
+  {
+    "id": "dic-inventario",
+    "kind": "diccionario",
+    "module": "inventario",
+    "title": "Diccionario: inventario",
+    "summary": "Bodegas, artículos, lotes, movimientos y existencias.",
+    "keywords": ["inventory_movements", "inventory_lots", "lote", "supplier_lot_number", "existencias", "diccionario"],
+    "body": "inventory_warehouses son las bodegas. inventory_articles es el catálogo. without_supplier_lot indica si el artículo no pide lote de proveedor.\ninventory_movement_types clasifica la entrada o la salida. El código 01 suele ser la compra.\ninventory_movements es el documento. En borrador todavía no mueve stock. supplier_invoice_number, supplier_invoice_date y supplier_invoice_due_date son la factura del proveedor. fcxp_id apunta a la cuenta por pagar creada al confirmar.\ninventory_movement_details guarda cada línea. supplier_lot_number es el lote que escribió el usuario. El lote interno se crea al confirmar y queda en inventory_lots.\ninventory_lot_balances es la existencia: bodega, artículo, lote, cantidad y costo de compra."
+  },
+  {
+    "id": "dic-cxp",
+    "kind": "diccionario",
+    "module": "cuentas_pagar",
+    "title": "Diccionario: cuentas por pagar",
+    "summary": "Cabecera, líneas e impuestos de la CxP.",
+    "keywords": ["fcxp", "fcxpd", "nro_factura", "documento soporte", "diccionario"],
+    "body": "fcxp es la cuenta por pagar: consecutivo cns_fcxp, proveedor id_tercero, nro_factura, fecha_factura, fecha_vence, valor y saldo. El estado incluye borrador, confirmada y los estados DIAN del documento soporte.\nfcxpd son las líneas. fcxpi guarda los impuestos.\nSi el proveedor maneja documento soporte, cns_doc_soporte y cns_resol quedan diligenciados al confirmar.\nfcxpdbcr y sus detalles registran las notas débito y crédito del proveedor."
+  },
+  {
+    "id": "dic-caja",
+    "kind": "diccionario",
+    "module": "caja",
+    "title": "Diccionario: caja",
+    "summary": "Cajas, turnos y recibos.",
+    "keywords": ["cash_registers", "cash_sessions", "cash_receipts", "diccionario"],
+    "body": "cash_registers define cada caja.\ncash_sessions es el turno: apertura, cierre, ingresos, egresos y diferencia de arqueo.\ncash_receipts es cada ingreso o egreso del turno.\ncash_session_payment_balances resume el dinero contado por medio de pago al cerrar."
+  },
+  {
+    "id": "dic-agenda",
+    "kind": "diccionario",
+    "module": "agenda_citas",
+    "title": "Diccionario: agenda",
+    "summary": "Profesionales, horarios y citas.",
+    "keywords": ["appointments", "professionals", "schedule", "citas", "diccionario"],
+    "body": "professionals son quienes atienden.\nservices, en este módulo, son los servicios que se agendan.\nschedule_templates y schedule_programming arman la disponibilidad.\nappointments es la cita: cliente, profesional, inicio, fin y estado (programada, cumplida, reagendada, facturada o anulada)."
+  },
+  {
+    "id": "dic-contabilidad",
+    "kind": "diccionario",
+    "module": "contabilidad",
+    "title": "Diccionario: contabilidad",
+    "summary": "Cuentas, comprobantes, líneas y saldos.",
+    "keywords": ["accounting_accounts", "accounting_journal", "puc", "balance", "diccionario"],
+    "body": "accounting_accounts es el plan de cuentas.\naccounting_voucher_types define los comprobantes y su consecutivo.\naccounting_periods marca cada mes como abierto o cerrado.\naccounting_journal_entries es la cabecera del asiento. accounting_journal_lines son débito y crédito por cuenta.\naccounting_cost_centers clasifica el gasto o el ingreso.\naccounting_balance_month acumula saldos por cuenta y periodo. Las tablas de tercero conservan el saldo por nit y por factura cuando la cuenta lo exige."
+  }
+]

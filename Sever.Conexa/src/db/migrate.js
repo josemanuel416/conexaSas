@@ -112,6 +112,8 @@ async function migrate() {
   await runSqlFile('040_resoluciones_pruebas_fv_ds.sql');
   await runSqlFile('041_fcxp_notas.sql');
   await runSqlFile('042_cndbcr_conceptos.sql');
+  await runSqlFile('043_user_signature.sql');
+  await runSqlFile('044_inventario_compra_cxp.sql');
   await seedDaneLocations();
   await seedAdmin();
   await seedConexaSoftCompany();

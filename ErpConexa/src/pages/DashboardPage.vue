@@ -11,7 +11,9 @@
         <div class="col-12 col-sm-6">
           <q-card flat bordered class="dashboard-stat-card">
             <q-card-section class="row items-center">
-              <q-icon name="people" size="40px" color="primary" class="q-mr-md" />
+              <div class="dashboard-stat-card__icon">
+                <q-icon name="people" size="28px" color="primary" />
+              </div>
               <div>
                 <div class="text-h5">{{ dashboard?.stats?.users || 0 }}</div>
                 <div class="text-grey-7">Usuarios activos</div>
@@ -22,7 +24,9 @@
         <div class="col-12 col-sm-6">
           <q-card flat bordered class="dashboard-stat-card">
             <q-card-section class="row items-center">
-              <q-icon name="extension" size="40px" color="primary" class="q-mr-md" />
+              <div class="dashboard-stat-card__icon">
+                <q-icon name="extension" size="28px" color="primary" />
+              </div>
               <div>
                 <div class="text-h5">{{ dashboard?.stats?.modules || 0 }}</div>
                 <div class="text-grey-7">Módulos activos</div>
@@ -41,7 +45,9 @@
         >
           <q-card flat bordered class="module-card">
             <q-card-section class="row items-center">
-              <q-icon :name="mod.icon || 'extension'" size="36px" color="primary" class="q-mr-md" />
+              <div class="module-card__icon">
+                <q-icon :name="mod.icon || 'extension'" size="26px" color="primary" />
+              </div>
               <div>
                 <div class="text-subtitle1">{{ mod.name }}</div>
                 <div class="text-caption text-grey-7">{{ mod.description }}</div>
@@ -73,10 +79,42 @@ onMounted(async () => {
 <style scoped>
 .dashboard-stat-card,
 .module-card {
-  transition: box-shadow 0.2s;
+  border-radius: 12px;
+  border-color: #90caf9;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  overflow: hidden;
+}
+.dashboard-stat-card {
+  border-top: 3px solid #1976d2;
+}
+.module-card {
+  border-top: 3px solid #0d47a1;
 }
 .dashboard-stat-card:hover,
 .module-card:hover {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(13, 71, 161, 0.16);
+}
+.dashboard-stat-card__icon,
+.module-card__icon {
+  width: 52px;
+  height: 52px;
+  margin-right: 16px;
+  border-radius: 14px;
+  background: #e3f2fd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-stat-card,
+  .module-card {
+    transition: none;
+  }
+  .dashboard-stat-card:hover,
+  .module-card:hover {
+    transform: none;
+  }
 }
 </style>

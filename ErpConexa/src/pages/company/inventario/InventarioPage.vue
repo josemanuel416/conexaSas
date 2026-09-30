@@ -56,55 +56,82 @@
           flat bordered
           :loading="loading"
           class="company-data-table"
+          @row-click="(_, row) => toggleRowExpand(row.id)"
         >
-          <template #body-cell-status="props">
-            <q-td :props="props">
-              <q-badge :color="statusColor(props.row.status)">{{ statusLabel(props.row.status) }}</q-badge>
-            </q-td>
-          </template>
-          <template #body-cell-totalValue="props">
-            <q-td :props="props" class="text-right">{{ formatMoney(props.row.totalValue) }}</q-td>
-          </template>
-          <template #body-cell-actions="props">
-            <q-td :props="props" class="company-data-table__actions">
-              <q-btn flat dense round size="sm" icon="visibility" color="primary" @click="viewMovement(props.row)">
-                <q-tooltip>Ver</q-tooltip>
-              </q-btn>
-              <q-btn
-                flat dense round size="sm" icon="picture_as_pdf" color="primary"
-                @click="openMovementPdf(props.row)"
-              >
-                <q-tooltip>PDF</q-tooltip>
-              </q-btn>
-              <q-btn
-                v-if="props.row.status === 'borrador' && hasPermission('inventario.movimientos')"
-                flat dense round size="sm" icon="edit" color="primary"
-                @click="openEditMovement(props.row)"
-              >
-                <q-tooltip>Editar</q-tooltip>
-              </q-btn>
-              <q-btn
-                v-if="canGenerateInvoice(props.row)"
-                flat dense round size="sm" icon="receipt_long" color="secondary"
-                @click="openInvoiceDialog(props.row)"
-              >
-                <q-tooltip>Generar factura</q-tooltip>
-              </q-btn>
-              <q-btn
-                v-if="props.row.status === 'borrador' && hasPermission('inventario.confirmar')"
-                flat dense round size="sm" icon="check_circle" color="positive"
-                @click="confirmMovement(props.row)"
-              >
-                <q-tooltip>Confirmar</q-tooltip>
-              </q-btn>
-              <q-btn
-                v-if="props.row.status === 'borrador' && hasPermission('inventario.anular')"
-                flat dense round size="sm" icon="cancel" color="negative"
-                @click="voidMovement(props.row)"
-              >
-                <q-tooltip>Anular</q-tooltip>
-              </q-btn>
-            </q-td>
+          <template #body="props">
+            <q-tr :props="props" class="cursor-pointer">
+              <q-td key="actions" :props="props" class="company-data-table__actions" @click.stop>
+                <q-btn flat dense round size="sm" icon="visibility" color="primary" @click="viewMovement(props.row)">
+                  <q-tooltip>Ver</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat dense round size="sm" icon="picture_as_pdf" color="primary"
+                  @click="openMovementPdf(props.row)"
+                >
+                  <q-tooltip>PDF</q-tooltip>
+                </q-btn>
+                <q-btn
+                  v-if="canEditMovement(props.row)"
+                  flat dense round size="sm" icon="edit" color="primary"
+                  @click="openEditMovement(props.row)"
+                >
+                  <q-tooltip>Editar</q-tooltip>
+                </q-btn>
+                <q-btn
+                  v-if="canGenerateInvoice(props.row)"
+                  flat dense round size="sm" icon="receipt_long" color="secondary"
+                  @click="openInvoiceDialog(props.row)"
+                >
+                  <q-tooltip>Generar factura</q-tooltip>
+                </q-btn>
+                <q-btn
+                  v-if="props.row.status === 'borrador' && hasPermission('inventario.confirmar')"
+                  flat dense round size="sm" icon="check_circle" color="positive"
+                  @click="confirmMovement(props.row)"
+                >
+                  <q-tooltip>Confirmar</q-tooltip>
+                </q-btn>
+                <q-btn
+                  v-if="props.row.status === 'borrador' && hasPermission('inventario.anular')"
+                  flat dense round size="sm" icon="cancel" color="negative"
+                  @click="voidMovement(props.row)"
+                >
+                  <q-tooltip>Anular</q-tooltip>
+                </q-btn>
+              </q-td>
+              <q-td key="expand" auto-width class="company-data-table__expand-toggle" @click.stop="toggleRowExpand(props.row.id)">
+                <q-btn
+                  flat dense round size="sm"
+                  :icon="expanded.includes(props.row.id) ? 'expand_less' : 'expand_more'"
+                  color="grey-7"
+                />
+              </q-td>
+              <q-td key="documentNumber" :props="props">{{ props.row.documentNumber }}</q-td>
+              <q-td key="movementDate" :props="props">{{ formatDate(props.row.movementDate) }}</q-td>
+              <q-td key="movementTypeName" :props="props">{{ props.row.movementTypeName }}</q-td>
+              <q-td key="warehouseName" :props="props">{{ props.row.warehouseName }}</q-td>
+              <q-td key="status" :props="props">
+                <q-badge :color="statusColor(props.row.status)">{{ statusLabel(props.row.status) }}</q-badge>
+              </q-td>
+              <q-td key="totalQuantity" :props="props" class="text-right">{{ props.row.totalQuantity }}</q-td>
+              <q-td key="totalValue" :props="props" class="text-right">{{ formatMoney(props.row.totalValue) }}</q-td>
+            </q-tr>
+            <q-tr v-show="expanded.includes(props.row.id)" :props="props" class="company-data-table__expand">
+              <q-td colspan="100%">
+                <div class="company-data-table__expand-inner company-data-table__expand-inner--sales">
+                  <InventoryMovementExpandPanel
+                    :row="props.row"
+                    :detail="detailCache[props.row.id]"
+                    :loading="detailLoading[props.row.id]"
+                    :editable="canEditMovement(props.row)"
+                    :saving="expandSaving === props.row.id"
+                    :articles="articles"
+                    :movement-config="movementConfig"
+                    @save="(payload) => saveExpandedMovement(props.row, payload)"
+                  />
+                </div>
+              </q-td>
+            </q-tr>
           </template>
         </q-table>
       </template>
@@ -190,25 +217,36 @@
           <q-select
             v-model="movForm.clientId"
             :options="clientOptionsFiltered"
-            label="Tercero *"
+            :label="isPurchaseType ? 'Proveedor *' : 'Tercero *'"
             outlined dense emit-value map-options use-input input-debounce="200"
             @filter="filterClients"
           >
             <template #after-options>
               <q-item v-if="canCreateClient" clickable @click="openNewClientDialog">
                 <q-item-section avatar><q-icon name="person_add" color="primary" /></q-item-section>
-                <q-item-section class="text-primary">Nuevo cliente…</q-item-section>
+                <q-item-section class="text-primary">{{ isPurchaseType ? 'Nuevo proveedor…' : 'Nuevo cliente…' }}</q-item-section>
               </q-item>
             </template>
             <template #no-option>
               <q-item v-if="canCreateClient" clickable @click="openNewClientDialog">
                 <q-item-section avatar><q-icon name="person_add" color="primary" /></q-item-section>
-                <q-item-section class="text-primary">Nuevo cliente…</q-item-section>
+                <q-item-section class="text-primary">{{ isPurchaseType ? 'Nuevo proveedor…' : 'Nuevo cliente…' }}</q-item-section>
               </q-item>
               <q-item v-else><q-item-section class="text-grey">Sin resultados</q-item-section></q-item>
             </template>
           </q-select>
         </div>
+        <template v-if="isPurchaseType && isEntry">
+          <div class="col-12 col-md-4">
+            <q-input v-model="movForm.supplierInvoiceNumber" label="N. factura *" outlined dense />
+          </div>
+          <div class="col-12 col-md-4">
+            <q-input v-model="movForm.supplierInvoiceDate" type="date" label="Fecha de generación *" outlined dense />
+          </div>
+          <div class="col-12 col-md-4">
+            <q-input v-model="movForm.supplierInvoiceDueDate" type="date" label="Fecha de vencimiento *" outlined dense />
+          </div>
+        </template>
         <div class="col-12">
           <q-input v-model="movForm.notes" label="Notas" outlined dense type="textarea" autogrow />
         </div>
@@ -311,6 +349,14 @@
         <div><strong>Bodega:</strong> {{ selectedMovement.warehouseName }}</div>
         <div><strong>Estado:</strong> {{ statusLabel(selectedMovement.status) }}</div>
         <div><strong>Total:</strong> {{ formatMoney(selectedMovement.totalValue) }}</div>
+        <div v-if="selectedMovement.supplierInvoiceNumber">
+          <strong>N. factura:</strong> {{ selectedMovement.supplierInvoiceNumber }}
+          · Generación {{ formatShortDate(selectedMovement.supplierInvoiceDate) }}
+          · Vence {{ formatShortDate(selectedMovement.supplierInvoiceDueDate) }}
+        </div>
+        <div v-if="selectedMovement.fcxpId">
+          <strong>Cuenta por pagar:</strong> {{ selectedMovement.fcxpNumber || selectedMovement.fcxpId }}
+        </div>
         <div v-if="selectedMovement.invoiceId">
           <strong>Documento venta:</strong>
           {{ selectedMovement.invoiceFullNumber || selectedMovement.invoiceInternalNumber || selectedMovement.invoiceId }}
@@ -402,7 +448,10 @@ import CompanyFormDialog from 'src/components/company/CompanyFormDialog.vue'
 import CompanyPageHeader from 'src/components/company/CompanyPageHeader.vue'
 import ClientFormFields from 'src/components/company/ClientFormFields.vue'
 import InventarioReportPdfDialog from 'src/components/company/inventario/InventarioReportPdfDialog.vue'
+import InventoryMovementExpandPanel from 'src/components/company/inventario/InventoryMovementExpandPanel.vue'
 import { useCompanyPageTab } from 'src/composables/useCompanyPageTab.js'
+import { useExpandableRows } from 'src/composables/useExpandableRows.js'
+import { formatDate } from 'src/utils/date-format.js'
 
 const $q = useQuasar()
 const tab = useCompanyPageTab(['movimientos', 'existencias'], 'movimientos')
@@ -413,6 +462,18 @@ const pageMetaMap = {
 }
 const pageMeta = computed(() => pageMetaMap[tab.value])
 
+const {
+  expanded,
+  detailCache,
+  detailLoading,
+  toggleRowExpand,
+  loadDetailIfNeeded,
+  invalidateDetail,
+} = useExpandableRows((id) => api.inventario.movement(id), {
+  onError: (e) => $q.notify({ type: 'negative', message: e.message }),
+})
+
+const expandSaving = ref(null)
 const loading = ref(false)
 const saving = ref(false)
 const exporting = ref(false)
@@ -507,7 +568,9 @@ const targetWarehouseOptions = computed(() =>
 )
 
 const movementTypeOptions = computed(() =>
-  movementTypes.value.map((t) => ({ label: `${t.code} — ${t.name}`, value: t.id, direction: t.direction, code: t.code }))
+  movementTypes.value
+    .filter((t) => t.isActive !== false)
+    .map((t) => ({ label: `${t.code} — ${t.name}`, value: t.id, direction: t.direction, code: t.code }))
 )
 
 const selectedMovementType = computed(() =>
@@ -518,11 +581,16 @@ const isEntry = computed(() => selectedMovementType.value?.direction === 'entrad
 const isTransferOutType = computed(() => selectedMovementType.value?.code === movementConfig.value?.transferOut)
 const isTransferMovement = computed(() => isTransferMovementCode(selectedMovementType.value?.code))
 const isSaleType = computed(() => isSaleMovementCode(selectedMovementType.value?.code))
+const isPurchaseType = computed(() => isPurchaseMovementCode(selectedMovementType.value?.code))
 const needsThirdParty = computed(() => !isTransferMovement.value)
 const canCreateClient = computed(() => hasPermission('ventas.clientes'))
 
 function isSaleMovementCode(code) {
   return code === movementConfig.value?.saleOut
+}
+
+function isPurchaseMovementCode(code) {
+  return code === (movementConfig.value?.purchaseIn || '01')
 }
 
 function isTransferOutMovementCode(code) {
@@ -531,6 +599,10 @@ function isTransferOutMovementCode(code) {
 
 function isTransferMovementCode(code) {
   return code === movementConfig.value?.transferOut || code === movementConfig.value?.transferIn
+}
+
+function canEditMovement(row) {
+  return row?.status === 'borrador' && hasPermission('inventario.movimientos')
 }
 
 function canGenerateInvoice(row) {
@@ -681,7 +753,8 @@ function validateExitLines() {
 }
 
 const movementColumns = [
-  { name: 'actions', label: '', field: 'actions', align: 'left', style: 'width: 120px' },
+  { name: 'actions', label: 'Acciones', field: 'actions', align: 'left', style: 'width: 200px' },
+  { name: 'expand', label: '', field: 'expand', align: 'center', style: 'width: 36px' },
   { name: 'documentNumber', label: 'Documento', field: 'documentNumber', align: 'left', sortable: true },
   { name: 'movementDate', label: 'Fecha', field: 'movementDate', align: 'left', sortable: true },
   { name: 'movementTypeName', label: 'Tipo', field: 'movementTypeName', align: 'left' },
@@ -702,6 +775,11 @@ const balanceColumns = [
   { name: 'purchaseUnitCost', label: 'Costo compra', field: 'purchaseUnitCost', align: 'right' },
   { name: 'totalValue', label: 'Valor', field: 'totalValue', align: 'right' },
 ]
+
+function formatShortDate(value) {
+  if (!value) return '—'
+  return String(value).slice(0, 10)
+}
 
 function formatMoney(v) {
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(v) || 0)
@@ -816,6 +894,9 @@ function openMovementDialog() {
     movementTypeId: movementTypes.value.find((t) => t.code === '01')?.id || null,
     movementDate: new Date().toISOString().slice(0, 10),
     referenceNumber: '', clientId: null, notes: '',
+    supplierInvoiceNumber: '',
+    supplierInvoiceDate: new Date().toISOString().slice(0, 10),
+    supplierInvoiceDueDate: '',
     lines: [emptyLine()],
   })
   clientOptionsFiltered.value = mapClientOptions(clients.value)
@@ -837,6 +918,9 @@ async function openEditMovement(row) {
       referenceNumber: movement.referenceNumber || '',
       clientId: movement.clientId || findClientIdByThirdParty(movement.thirdPartyDocument, movement.thirdPartyName),
       notes: movement.notes || '',
+      supplierInvoiceNumber: movement.supplierInvoiceNumber || '',
+      supplierInvoiceDate: movement.supplierInvoiceDate ? String(movement.supplierInvoiceDate).slice(0, 10) : '',
+      supplierInvoiceDueDate: movement.supplierInvoiceDueDate ? String(movement.supplierInvoiceDueDate).slice(0, 10) : '',
       lines: (movement.details?.length ? movement.details : [emptyLine()]).map((d) => ({
         articleId: d.articleId,
         quantity: d.quantity,
@@ -888,6 +972,21 @@ async function loadCatalog() {
   clientOptionsFiltered.value = mapClientOptions(clients.value)
 }
 
+async function saveExpandedMovement(row, payload) {
+  expandSaving.value = row.id
+  try {
+    await api.inventario.updateMovement(row.id, payload)
+    invalidateDetail(row.id)
+    await loadDetailIfNeeded(row.id)
+    await loadMovements()
+    $q.notify({ type: 'positive', message: 'Ítems actualizados' })
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e.message })
+  } finally {
+    expandSaving.value = null
+  }
+}
+
 async function loadMovements() {
   loading.value = true
   try {
@@ -916,8 +1015,21 @@ async function loadBalances() {
 
 async function saveMovement() {
   if (needsThirdParty.value && !movForm.clientId) {
-    $q.notify({ type: 'warning', message: 'Seleccione un tercero de la lista de clientes' })
+    $q.notify({
+      type: 'warning',
+      message: isPurchaseType.value ? 'Seleccione el proveedor' : 'Seleccione un tercero de la lista de clientes',
+    })
     return
+  }
+  if (isPurchaseType.value && isEntry.value) {
+    if (!movForm.supplierInvoiceNumber?.trim() || !movForm.supplierInvoiceDate || !movForm.supplierInvoiceDueDate) {
+      $q.notify({ type: 'warning', message: 'Indique N. factura, fecha de generación y fecha de vencimiento' })
+      return
+    }
+    if (movForm.supplierInvoiceDueDate < movForm.supplierInvoiceDate) {
+      $q.notify({ type: 'warning', message: 'La fecha de vencimiento no puede ser anterior a la fecha de generación' })
+      return
+    }
   }
   if (!validateExitLines()) return
   if (isSaleType.value && !isEntry.value) {
@@ -939,6 +1051,9 @@ async function saveMovement() {
       movementDate: movForm.movementDate,
       referenceNumber: movForm.referenceNumber,
       clientId: movForm.clientId,
+      supplierInvoiceNumber: isPurchaseType.value ? movForm.supplierInvoiceNumber : null,
+      supplierInvoiceDate: isPurchaseType.value ? movForm.supplierInvoiceDate : null,
+      supplierInvoiceDueDate: isPurchaseType.value ? movForm.supplierInvoiceDueDate : null,
       notes: movForm.notes,
       lines: movForm.lines.filter((l) => l.articleId).map((l) => ({
         articleId: l.articleId,
@@ -1048,11 +1163,14 @@ async function viewMovement(row) {
 
 async function confirmMovement(row) {
   const isTransfer = isTransferOutMovementCode(row.movementTypeCode)
+  const isPurchase = isPurchaseMovementCode(row.movementTypeCode)
   $q.dialog({
     title: 'Confirmar movimiento',
     message: isTransfer
       ? `¿Confirma ${row.documentNumber}? Se registrará la salida y se creará automáticamente la entrada en la bodega destino.`
-      : `¿Confirma ${row.documentNumber}? Se actualizarán las existencias.`,
+      : isPurchase
+        ? `¿Confirma ${row.documentNumber}? Se actualizarán las existencias y se creará la cuenta por pagar al proveedor.`
+        : `¿Confirma ${row.documentNumber}? Se actualizarán las existencias.`,
     cancel: true,
     persistent: true,
   }).onOk(async () => {
@@ -1063,6 +1181,12 @@ async function confirmMovement(row) {
         $q.notify({
           type: 'positive',
           message: `Traslado confirmado. Entrada creada: ${result.relatedMovementDocument}`,
+          timeout: 5000,
+        })
+      } else if (result?.fcxpNumber) {
+        $q.notify({
+          type: 'positive',
+          message: `Movimiento confirmado. Cuenta por pagar ${result.fcxpNumber} creada al proveedor.`,
           timeout: 5000,
         })
       } else {

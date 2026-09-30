@@ -13,6 +13,7 @@ import { formatCompanyDian } from './dian-readiness.js';
 import { formatClient } from './client-format.js';
 import { signXmlWithFePos } from './fepos-client.js';
 import { buildInvoicePdf, buildInvoicePdfFileName } from './invoice-pdf.js';
+import { loadUserAuthor } from './user-signature.js';
 import { yearFromDateValue } from './app-timezone.js';
 import { createZipBuffer } from './zip-buffer.js';
 
@@ -178,6 +179,7 @@ export async function buildInvoiceClientPackage({ invoice, companyId, attempt = 
     client,
     resolution,
     signedXml: submission.signed_xml,
+    preparedBy: await loadUserAuthor(pool, invoice.createdBy),
   });
   const pdfFileName = buildInvoicePdfFileName(invoice);
 

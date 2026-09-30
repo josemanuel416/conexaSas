@@ -195,6 +195,26 @@ export const api = {
         method: 'PUT',
         body: JSON.stringify({ permissions }),
       }),
+    uploadUserSignature: (id, file) => {
+      const form = new FormData()
+      form.append('signature', file)
+      return request(`/api/company/users/${id}/signature`, { method: 'POST', body: form })
+    },
+    deleteUserSignature: (id) =>
+      request(`/api/company/users/${id}/signature`, { method: 'DELETE' }),
+    fetchUserSignatureBlob: async (id) => {
+      const path = `/api/company/users/${id}/signature`
+      const headers = {}
+      const token = getTokenForPath(path)
+      if (token) headers.Authorization = `Bearer ${token}`
+      const res = await fetch(`${API_URL}${path}`, { headers })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || `HTTP ${res.status}`)
+      }
+      const blob = await res.blob()
+      return { blob, url: URL.createObjectURL(blob) }
+    },
     agenda: {
       professionals: () => request('/api/company/agenda/professionals'),
       createProfessional: (d) => request('/api/company/agenda/professionals', { method: 'POST', body: JSON.stringify(d) }),
@@ -536,6 +556,8 @@ export const api = {
     createArticleType: (d) => request('/api/company/inventario/article-types', { method: 'POST', body: JSON.stringify(d) }),
     updateArticleType: (id, d) => request(`/api/company/inventario/article-types/${id}`, { method: 'PUT', body: JSON.stringify(d) }),
     movementTypes: () => request('/api/company/inventario/movement-types'),
+    createMovementType: (d) => request('/api/company/inventario/movement-types', { method: 'POST', body: JSON.stringify(d) }),
+    updateMovementType: (id, d) => request(`/api/company/inventario/movement-types/${id}`, { method: 'PUT', body: JSON.stringify(d) }),
     articles: () => request('/api/company/inventario/articles'),
     nextArticleCode: () => request('/api/company/inventario/articles/next-code'),
     createArticle: (d) => request('/api/company/inventario/articles', { method: 'POST', body: JSON.stringify(d) }),
@@ -746,6 +768,20 @@ export const api = {
     generalBalance: (yearMonth) =>
       request(`/api/company/contabilidad/reports/general-balance?yearMonth=${yearMonth}`),
     catalogClients: () => request('/api/company/contabilidad/catalog/clients'),
+  },
+
+  ayuda: {
+    temas: (kind) => request(`/api/company/ayuda/temas${kind ? `?kind=${kind}` : ''}`),
+    manual: (id) => request(`/api/company/ayuda/manuales/${id}`),
+    prepararVideo: (id) => request(`/api/company/ayuda/manuales/${id}/reproducir`, {
+      method: 'POST',
+      body: JSON.stringify({}),
+    }),
+    consultar: (question) =>
+      request('/api/company/ayuda/consultar', {
+        method: 'POST',
+        body: JSON.stringify({ question }),
+      }),
   },
 
   support: {

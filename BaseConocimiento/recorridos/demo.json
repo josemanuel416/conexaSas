@@ -1,0 +1,11 @@
+{
+  "slug": "conexasoft",
+  "cliente": "Manual Ayuda",
+  "documento": "800000001",
+  "servicio": "Acompañamiento comercial",
+  "articulo": "ARTMAN",
+  "articuloNombre": "Producto de demostración",
+  "bodega": "Bodega principal",
+  "tipoCompra": "01 — Entradas por compras",
+  "moduloInventario": "Inventario"
+}

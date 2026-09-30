@@ -73,6 +73,36 @@
         </q-table>
       </template>
 
+      <!-- Tipos de movimiento -->
+      <template v-else-if="tab === 'tipos-movimiento'">
+        <div class="q-mb-md">
+          <q-btn color="primary" icon="add" label="Nuevo tipo de movimiento" unelevated @click="openMovementTypeDialog()" />
+        </div>
+        <q-table :rows="movementTypes" :columns="movementTypeColumns" row-key="id" flat bordered class="company-data-table">
+          <template #body-cell-direction="props">
+            <q-td :props="props">
+              <q-badge :color="props.row.direction === 'entrada' ? 'positive' : 'negative'">
+                {{ props.row.direction === 'entrada' ? 'Entrada' : 'Salida' }}
+              </q-badge>
+            </q-td>
+          </template>
+          <template #body-cell-isActive="props">
+            <q-td :props="props">
+              <q-badge :color="props.row.isActive ? 'positive' : 'grey'">
+                {{ props.row.isActive ? 'Activo' : 'Inactivo' }}
+              </q-badge>
+            </q-td>
+          </template>
+          <template #body-cell-actions="props">
+            <q-td :props="props" class="company-data-table__actions">
+              <q-btn flat dense round size="sm" icon="edit" color="primary" @click="openMovementTypeDialog(props.row)">
+                <q-tooltip>Editar</q-tooltip>
+              </q-btn>
+            </q-td>
+          </template>
+        </q-table>
+      </template>
+
       <!-- Variables -->
       <template v-else-if="tab === 'variables'">
         <q-table :rows="variables" :columns="variableColumns" row-key="key" flat bordered class="company-data-table">
@@ -192,6 +222,52 @@
       </template>
     </CompanyFormDialog>
 
+    <!-- Tipo de movimiento -->
+    <CompanyFormDialog
+      v-model="movementTypeDialog"
+      :title="movementTypeForm.id ? 'Editar tipo de movimiento' : 'Nuevo tipo de movimiento'"
+      icon="swap_vert"
+    >
+      <div class="row q-col-gutter-md">
+        <div class="col-12 col-md-4">
+          <q-input
+            v-model="movementTypeForm.code"
+            label="Código *"
+            outlined
+            dense
+            maxlength="5"
+            :readonly="!!movementTypeForm.id"
+            hint="Hasta 5 letras o números"
+          />
+        </div>
+        <div class="col-12 col-md-8">
+          <q-input v-model="movementTypeForm.name" label="Nombre *" outlined dense />
+        </div>
+        <div class="col-12 col-md-6">
+          <q-select
+            v-model="movementTypeForm.direction"
+            :options="directionOptions"
+            label="Dirección *"
+            outlined
+            dense
+            emit-value
+            map-options
+            :readonly="!!movementTypeForm.id"
+          />
+        </div>
+        <div v-if="movementTypeForm.id" class="col-12 col-md-6">
+          <q-toggle v-model="movementTypeForm.isActive" label="Activo" />
+        </div>
+        <div class="col-12">
+          <q-input v-model="movementTypeForm.description" label="Descripción" outlined dense type="textarea" autogrow />
+        </div>
+      </div>
+      <template #actions>
+        <q-btn flat icon="close" label="Cancelar" v-close-popup />
+        <q-btn color="primary" icon="save" label="Guardar" :loading="saving" unelevated @click="saveMovementType" />
+      </template>
+    </CompanyFormDialog>
+
     <!-- Variable -->
     <CompanyFormDialog v-model="variableDialog" title="Editar variable" icon="tune">
       <p class="text-caption text-grey-7 q-mb-md">{{ variableForm.description }}</p>
@@ -227,13 +303,14 @@ import CompanyPageHeader from 'src/components/company/CompanyPageHeader.vue'
 import { useCompanyPageTab } from 'src/composables/useCompanyPageTab.js'
 
 const $q = useQuasar()
-const validTabs = ['bodegas', 'articulos', 'tipos', 'variables']
+const validTabs = ['bodegas', 'articulos', 'tipos', 'tipos-movimiento', 'variables']
 const tab = useCompanyPageTab(validTabs, 'bodegas')
 
 const pageMetaMap = {
   bodegas: { title: 'Bodegas', icon: 'warehouse' },
   articulos: { title: 'Artículos', icon: 'category' },
   tipos: { title: 'Tipos de artículo', icon: 'label' },
+  'tipos-movimiento': { title: 'Tipos de movimiento', icon: 'swap_vert' },
   variables: { title: 'Variables inventario', icon: 'tune' },
 }
 const pageMeta = computed(() => pageMetaMap[tab.value] || pageMetaMap.bodegas)
@@ -249,11 +326,13 @@ const MOVEMENT_TYPE_VAR_KEYS = [
   'inventory.movement.transfer_out_code',
   'inventory.movement.transfer_in_code',
   'inventory.movement.sale_out_code',
+  'inventory.movement.purchase_in_code',
 ]
 
 const warehouseDialog = ref(false)
 const articleDialog = ref(false)
 const typeDialog = ref(false)
+const movementTypeDialog = ref(false)
 const variableDialog = ref(false)
 
 const warehouseForm = reactive({ id: null, code: '', name: '', documentPrefix: '', address: '', isDefault: false, isActive: true })
@@ -262,6 +341,13 @@ const articleForm = reactive({
   withoutSupplierLot: false, requiresExpiryDate: false, defaultExpiryDays: 730, barcode: '', averageCost: 0,
 })
 const typeForm = reactive({ id: null, code: '', name: '', description: '' })
+const movementTypeForm = reactive({
+  id: null, code: '', name: '', direction: 'entrada', description: '', isActive: true,
+})
+const directionOptions = [
+  { label: 'Entrada', value: 'entrada' },
+  { label: 'Salida', value: 'salida' },
+]
 const variableForm = reactive({ key: '', label: '', description: '', value: '' })
 
 const valuationOptions = [
@@ -317,6 +403,15 @@ const typeColumns = [
   { name: 'code', label: 'Código', field: 'code', align: 'left' },
   { name: 'name', label: 'Nombre', field: 'name', align: 'left' },
   { name: 'description', label: 'Descripción', field: 'description', align: 'left' },
+]
+
+const movementTypeColumns = [
+  { name: 'actions', label: '', field: 'actions', align: 'left', style: 'width: 56px' },
+  { name: 'code', label: 'Código', field: 'code', align: 'left', sortable: true },
+  { name: 'name', label: 'Nombre', field: 'name', align: 'left', sortable: true },
+  { name: 'direction', label: 'Dirección', field: 'direction', align: 'center' },
+  { name: 'description', label: 'Descripción', field: 'description', align: 'left' },
+  { name: 'isActive', label: 'Estado', field: 'isActive', align: 'center' },
 ]
 
 const variableColumns = [
@@ -419,6 +514,49 @@ async function saveType() {
     typeDialog.value = false
     articleTypes.value = await api.inventario.articleTypes()
     $q.notify({ type: 'positive', message: 'Tipo guardado' })
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e.message })
+  } finally {
+    saving.value = false
+  }
+}
+
+function openMovementTypeDialog(row = null) {
+  Object.assign(movementTypeForm, row
+    ? {
+      id: row.id,
+      code: row.code,
+      name: row.name,
+      direction: row.direction,
+      description: row.description || '',
+      isActive: row.isActive !== false,
+    }
+    : { id: null, code: '', name: '', direction: 'entrada', description: '', isActive: true })
+  movementTypeDialog.value = true
+}
+
+async function saveMovementType() {
+  saving.value = true
+  try {
+    if (!movementTypeForm.name?.trim()) throw new Error('El nombre es requerido')
+    if (movementTypeForm.id) {
+      await api.inventario.updateMovementType(movementTypeForm.id, {
+        name: movementTypeForm.name,
+        description: movementTypeForm.description,
+        isActive: movementTypeForm.isActive,
+      })
+    } else {
+      if (!movementTypeForm.code?.trim()) throw new Error('El código es requerido')
+      await api.inventario.createMovementType({
+        code: movementTypeForm.code,
+        name: movementTypeForm.name,
+        direction: movementTypeForm.direction,
+        description: movementTypeForm.description,
+      })
+    }
+    movementTypeDialog.value = false
+    movementTypes.value = await api.inventario.movementTypes()
+    $q.notify({ type: 'positive', message: 'Tipo de movimiento guardado' })
   } catch (e) {
     $q.notify({ type: 'negative', message: e.message })
   } finally {

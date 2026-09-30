@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Ecosistema DevConexa
 
-Monorepo con 5 proyectos relacionados. Abrir `DevConexa.code-workspace` para trabajar con todos.
+Monorepo con 6 proyectos relacionados. Abrir `DevConexa.code-workspace` para trabajar con todos.
 
 ## Proyectos y puertos
 
@@ -16,10 +16,12 @@ Monorepo con 5 proyectos relacionados. Abrir `DevConexa.code-workspace` para tra
 | ServerFEpos | Express (facturación DIAN) | 3000 |
 | ChatBoot | Express + WhatsApp Meta API | 3001 (dev) |
 | Scripts | SQL + docs | — |
+| BaseConocimiento | Manual de usuario (módulos, procesos, diccionario) | — |
 
 ## Dependencias entre servicios
 
 - ErpConexa → Sever.Conexa (`VITE_API_URL=http://localhost:3500`)
+- Sever.Conexa → BaseConocimiento (chat de ayuda del ERP)
 - Sever.Conexa → PostgreSQL (`DATABASE_URL`, DB `Conexa`)
 - ChatBoot → PostgreSQL + ServerFEpos (facturas)
 - ServerFEpos → certificado DIAN (.p12 en `cert/`)

@@ -72,6 +72,45 @@
             <div v-if="isEdit" class="col-12">
               <q-toggle v-model="form.isActive" label="Usuario activo" color="positive" />
             </div>
+            <div class="col-12">
+              <div class="text-subtitle2 text-primary q-mb-xs">Firma</div>
+              <div class="text-caption text-grey-7 q-mb-sm">
+                Se imprime en cotizaciones, prefacturas y facturas elaboradas por este usuario. Use PNG, JPG o WEBP, de preferencia con fondo transparente.
+              </div>
+              <div v-if="signaturePreview && !removeSignature" class="q-mb-sm">
+                <q-img
+                  :src="signaturePreview"
+                  fit="contain"
+                  style="width: 220px; height: 80px; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; background: #fff"
+                />
+              </div>
+              <div class="row q-col-gutter-sm items-center">
+                <div class="col-12 col-md-6">
+                  <q-file
+                    v-model="signatureFile"
+                    label="Imagen de la firma"
+                    outlined
+                    dense
+                    clearable
+                    accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+                    @update:model-value="onSignatureFile"
+                  >
+                    <template #prepend>
+                      <q-icon name="draw" />
+                    </template>
+                  </q-file>
+                </div>
+                <div v-if="form.hasSignature && isEdit" class="col-auto">
+                  <q-btn
+                    flat
+                    color="negative"
+                    icon="delete"
+                    :label="removeSignature ? 'Firma se quitará al guardar' : 'Quitar firma'"
+                    @click="toggleRemoveSignature"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           <q-separator />
@@ -128,7 +167,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { api } from 'src/services/api.js'
@@ -170,6 +209,42 @@ const form = reactive({
   isActive: true,
   permissions: [],
   cashRegisterId: null,
+  hasSignature: false,
+})
+
+const signatureFile = ref(null)
+const signaturePreview = ref('')
+const removeSignature = ref(false)
+let savedPreviewUrl = ''
+let filePreviewUrl = ''
+
+function onSignatureFile(file) {
+  removeSignature.value = false
+  if (filePreviewUrl) {
+    URL.revokeObjectURL(filePreviewUrl)
+    filePreviewUrl = ''
+  }
+  if (!file) {
+    signaturePreview.value = savedPreviewUrl
+    return
+  }
+  filePreviewUrl = URL.createObjectURL(file)
+  signaturePreview.value = filePreviewUrl
+}
+
+function toggleRemoveSignature() {
+  removeSignature.value = !removeSignature.value
+  signatureFile.value = null
+  if (filePreviewUrl) {
+    URL.revokeObjectURL(filePreviewUrl)
+    filePreviewUrl = ''
+  }
+  signaturePreview.value = removeSignature.value ? '' : savedPreviewUrl
+}
+
+onBeforeUnmount(() => {
+  if (savedPreviewUrl) URL.revokeObjectURL(savedPreviewUrl)
+  if (filePreviewUrl) URL.revokeObjectURL(filePreviewUrl)
 })
 
 const passwordRules = computed(() => {
@@ -208,6 +283,14 @@ onMounted(async () => {
       form.isActive = user.isActive
       form.cashRegisterId = user.cashRegisterId || null
       form.permissions = user.permissions.map(p => p.id)
+      form.hasSignature = Boolean(user.hasSignature)
+      if (user.hasSignature) {
+        try {
+          const preview = await api.company.fetchUserSignatureBlob(userId.value)
+          savedPreviewUrl = preview.url
+          signaturePreview.value = preview.url
+        } catch { /* sin imagen disponible */ }
+      }
     }
   } catch (err) {
     $q.notify({ type: 'negative', message: err.message })
@@ -229,6 +312,7 @@ async function onSubmit() {
       throw new Error('Nombre y email son requeridos')
     }
 
+    let savedUserId = userId.value
     if (isEdit.value) {
       const payload = {
         fullName,
@@ -243,13 +327,12 @@ async function onSubmit() {
       }
       await api.company.updateUser(userId.value, payload)
       await api.company.updateUserPermissions(userId.value, form.permissions)
-      $q.notify({ type: 'positive', message: 'Usuario y permisos actualizados' })
     } else {
       if (!password) throw new Error('La contraseña es requerida')
       if (password.length < 6) throw new Error('La contraseña debe tener mínimo 6 caracteres')
       if (password !== confirmPassword) throw new Error('Las contraseñas no coinciden')
 
-      await api.company.createUser({
+      const created = await api.company.createUser({
         fullName,
         email,
         password,
@@ -257,8 +340,18 @@ async function onSubmit() {
         permissions: form.permissions,
         cashRegisterId: form.cashRegisterId || null,
       })
-      $q.notify({ type: 'positive', message: 'Usuario creado' })
+      savedUserId = created.id
     }
+
+    if (signatureFile.value) {
+      await api.company.uploadUserSignature(savedUserId, signatureFile.value)
+    } else if (removeSignature.value && isEdit.value) {
+      await api.company.deleteUserSignature(savedUserId)
+    }
+    $q.notify({
+      type: 'positive',
+      message: isEdit.value ? 'Usuario y permisos actualizados' : 'Usuario creado',
+    })
     router.push('/users')
   } catch (err) {
     $q.notify({ type: 'negative', message: err.message })

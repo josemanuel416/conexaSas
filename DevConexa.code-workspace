@@ -23,6 +23,10 @@
     {
       "name": "Scripts (SQL y docs)",
       "path": "Scripts"
+    },
+    {
+      "name": "BaseConocimiento",
+      "path": "BaseConocimiento"
     }
   ],
   "settings": {

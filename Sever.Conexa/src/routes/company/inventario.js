@@ -41,9 +41,11 @@ import {
   isTransferMovementCode,
   isTransferOutCode,
   isSaleOutCode,
+  isPurchaseInCode,
   assertMovementTypeCode,
   MOVEMENT_SETTING_KEYS,
 } from '../../utils/inventory-movement-config.js';
+import { assertPurchaseInvoiceFields } from '../../utils/inventory-purchase-fcxp.js';
 import { createInvoiceFromMovement } from '../../utils/inventory-invoice.js';
 
 const router = Router();
@@ -85,6 +87,28 @@ async function assertClient(companyId, clientId) {
 
 function movementNeedsThirdParty(code, settings) {
   return !isTransferMovementCode(code, settings);
+}
+
+function purchaseInvoicePayload(body, movementTypeCode, settings) {
+  if (!isPurchaseInCode(movementTypeCode, settings)) {
+    return {
+      supplierInvoiceNumber: null,
+      supplierInvoiceDate: null,
+      supplierInvoiceDueDate: null,
+    };
+  }
+  const payload = {
+    clientId: body.clientId,
+    supplierInvoiceNumber: body.supplierInvoiceNumber,
+    supplierInvoiceDate: body.supplierInvoiceDate,
+    supplierInvoiceDueDate: body.supplierInvoiceDueDate,
+  };
+  assertPurchaseInvoiceFields(payload);
+  return {
+    supplierInvoiceNumber: String(body.supplierInvoiceNumber).trim(),
+    supplierInvoiceDate: String(body.supplierInvoiceDate).slice(0, 10),
+    supplierInvoiceDueDate: String(body.supplierInvoiceDueDate).slice(0, 10),
+  };
 }
 
 async function assertArticle(companyId, articleId) {
@@ -257,13 +281,15 @@ async function fetchMovementHeader(companyId, movementId) {
             u.full_name AS created_by_name,
             inv.full_number AS invoice_full_number,
             inv.internal_number AS invoice_internal_number,
-            inv.document_kind AS invoice_document_kind
+            inv.document_kind AS invoice_document_kind,
+            fx.cns_fcxp AS fcxp_number
      FROM inventory_movements m
      JOIN inventory_warehouses w ON w.id = m.warehouse_id
      LEFT JOIN inventory_warehouses tw ON tw.id = m.target_warehouse_id
      JOIN inventory_movement_types mt ON mt.id = m.movement_type_id
      LEFT JOIN users u ON u.id = m.created_by
      LEFT JOIN invoices inv ON inv.id = m.invoice_id
+     LEFT JOIN fcxp fx ON fx.id = m.fcxp_id
      WHERE m.id = $1 AND m.company_id = $2`,
     [movementId, companyId]
   );
@@ -512,10 +538,64 @@ router.put('/article-types/:id', requirePermission('inventario.catalogos'), asyn
 // --- Tipos movimiento (lectura) ---
 router.get('/movement-types', requirePermission('inventario.acceso'), async (req, res) => {
   const { rows } = await pool.query(
-    `SELECT * FROM inventory_movement_types WHERE company_id = $1 AND is_active = true ORDER BY sort_order, code`,
+    `SELECT * FROM inventory_movement_types WHERE company_id = $1 ORDER BY sort_order, code`,
     [req.user.companyId]
   );
   res.json(rows.map(formatMovementType));
+});
+
+router.post('/movement-types', requirePermission('inventario.catalogos'), async (req, res) => {
+  const code = String(req.body.code || '').trim().toUpperCase();
+  const name = String(req.body.name || '').trim();
+  const direction = req.body.direction === 'salida' ? 'salida' : req.body.direction === 'entrada' ? 'entrada' : '';
+  const description = String(req.body.description || '').trim() || null;
+  if (!code || !name || !direction) {
+    return res.status(400).json({ error: 'Código, nombre y dirección son requeridos' });
+  }
+  if (!/^[A-Z0-9]{1,5}$/.test(code)) {
+    return res.status(400).json({ error: 'El código debe tener de 1 a 5 letras o números' });
+  }
+  try {
+    const { rows: orderRows } = await pool.query(
+      `SELECT COALESCE(MAX(sort_order), 0) + 1 AS next FROM inventory_movement_types WHERE company_id = $1`,
+      [req.user.companyId]
+    );
+    const { rows } = await pool.query(
+      `INSERT INTO inventory_movement_types (
+         company_id, code, name, direction, description, is_system, is_active, sort_order
+       ) VALUES ($1, $2, $3, $4, $5, false, true, $6)
+       RETURNING *`,
+      [req.user.companyId, code, name, direction, description, orderRows[0].next]
+    );
+    res.status(201).json(formatMovementType(rows[0]));
+  } catch (err) {
+    if (err.code === '23505') return res.status(409).json({ error: 'Ya existe un tipo con ese código' });
+    throw err;
+  }
+});
+
+router.put('/movement-types/:id', requirePermission('inventario.catalogos'), async (req, res) => {
+  const name = String(req.body.name || '').trim();
+  const description = String(req.body.description || '').trim() || null;
+  if (!name) return res.status(400).json({ error: 'Nombre requerido' });
+  const { rows } = await pool.query(
+    `UPDATE inventory_movement_types SET
+       name = $1,
+       description = $2,
+       is_active = COALESCE($3, is_active),
+       updated_at = NOW()
+     WHERE id = $4 AND company_id = $5
+     RETURNING *`,
+    [
+      name,
+      description,
+      req.body.isActive !== undefined ? Boolean(req.body.isActive) : null,
+      req.params.id,
+      req.user.companyId,
+    ]
+  );
+  if (!rows[0]) return res.status(404).json({ error: 'Tipo de movimiento no encontrado' });
+  res.json(formatMovementType(rows[0]));
 });
 
 // --- Artículos ---
@@ -689,10 +769,21 @@ router.put('/settings/:key', requirePermission('inventario.variables'), async (r
     MOVEMENT_SETTING_KEYS.transferOut,
     MOVEMENT_SETTING_KEYS.transferIn,
     MOVEMENT_SETTING_KEYS.saleOut,
+    MOVEMENT_SETTING_KEYS.purchaseIn,
   ];
   if (movementTypeKeys.includes(key)) {
     try {
       req.body.value = await assertMovementTypeCode(pool, req.user.companyId, req.body.value);
+      if (key === MOVEMENT_SETTING_KEYS.purchaseIn) {
+        const { rows } = await pool.query(
+          `SELECT direction FROM inventory_movement_types
+           WHERE company_id = $1 AND code = $2 AND is_active = true`,
+          [req.user.companyId, req.body.value],
+        );
+        if (rows[0]?.direction !== 'entrada') {
+          return res.status(400).json({ error: 'Compras a proveedores debe ser un tipo de movimiento de entrada' });
+        }
+      }
     } catch (err) {
       if (err.status) return res.status(err.status).json({ error: err.message });
       throw err;
@@ -886,6 +977,7 @@ router.post('/movements', requirePermission('inventario.movimientos'), async (re
   let thirdPartyName;
   let thirdPartyDocument;
   let clientId;
+  let purchaseInvoice;
   try {
     ({ thirdPartyName, thirdPartyDocument, clientId } = await resolveThirdPartyFields(
       req.user.companyId,
@@ -893,6 +985,10 @@ router.post('/movements', requirePermission('inventario.movimientos'), async (re
       b.clientId,
       movSettings,
     ));
+    if (isPurchaseInCode(mType.code, movSettings) && mType.direction !== 'entrada') {
+      return res.status(400).json({ error: 'El tipo de compras a proveedores debe ser un movimiento de entrada' });
+    }
+    purchaseInvoice = purchaseInvoicePayload(b, mType.code, movSettings);
   } catch (err) {
     if (err.status) return res.status(err.status).json({ error: err.message });
     throw err;
@@ -914,8 +1010,9 @@ router.post('/movements', requirePermission('inventario.movimientos'), async (re
       `INSERT INTO inventory_movements (
          company_id, warehouse_id, target_warehouse_id, movement_type_id,
          document_number, movement_date, client_id, third_party_name, third_party_document,
-         reference_number, notes, total_quantity, total_value, created_by
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+         reference_number, supplier_invoice_number, supplier_invoice_date, supplier_invoice_due_date,
+         notes, total_quantity, total_value, created_by
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
        RETURNING *`,
       [
         req.user.companyId,
@@ -928,6 +1025,9 @@ router.post('/movements', requirePermission('inventario.movimientos'), async (re
         thirdPartyName,
         thirdPartyDocument,
         b.referenceNumber?.trim() || null,
+        purchaseInvoice.supplierInvoiceNumber,
+        purchaseInvoice.supplierInvoiceDate,
+        purchaseInvoice.supplierInvoiceDueDate,
         b.notes?.trim() || null,
         totalQuantity,
         totalValue,
@@ -969,6 +1069,7 @@ router.put('/movements/:id', requirePermission('inventario.movimientos'), async 
   let thirdPartyName;
   let thirdPartyDocument;
   let clientId;
+  let purchaseInvoice;
   try {
     ({ thirdPartyName, thirdPartyDocument, clientId } = await resolveThirdPartyFields(
       req.user.companyId,
@@ -976,6 +1077,10 @@ router.put('/movements/:id', requirePermission('inventario.movimientos'), async 
       b.clientId,
       movSettings,
     ));
+    if (isPurchaseInCode(mType.code, movSettings) && mType.direction !== 'entrada') {
+      return res.status(400).json({ error: 'El tipo de compras a proveedores debe ser un movimiento de entrada' });
+    }
+    purchaseInvoice = purchaseInvoicePayload(b, mType.code, movSettings);
   } catch (err) {
     if (err.status) return res.status(err.status).json({ error: err.message });
     throw err;
@@ -1002,11 +1107,14 @@ router.put('/movements/:id', requirePermission('inventario.movimientos'), async 
          third_party_name = $6,
          third_party_document = $7,
          reference_number = $8,
-         notes = $9,
-         total_quantity = $10,
-         total_value = $11,
+         supplier_invoice_number = $9,
+         supplier_invoice_date = $10,
+         supplier_invoice_due_date = $11,
+         notes = $12,
+         total_quantity = $13,
+         total_value = $14,
          updated_at = NOW()
-       WHERE id = $12 AND company_id = $13`,
+       WHERE id = $15 AND company_id = $16`,
       [
         b.warehouseId,
         b.targetWarehouseId || null,
@@ -1016,6 +1124,9 @@ router.put('/movements/:id', requirePermission('inventario.movimientos'), async 
         thirdPartyName,
         thirdPartyDocument,
         b.referenceNumber?.trim() || null,
+        purchaseInvoice.supplierInvoiceNumber,
+        purchaseInvoice.supplierInvoiceDate,
+        purchaseInvoice.supplierInvoiceDueDate,
         b.notes?.trim() || null,
         totalQuantity,
         totalValue,

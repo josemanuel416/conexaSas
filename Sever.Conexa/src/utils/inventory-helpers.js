@@ -2,9 +2,11 @@ import { getCompanyVariable } from './company-settings.js';
 import { todayIsoDate } from './app-timezone.js';
 import {
   getInventoryMovementSettings,
+  isPurchaseInCode,
   isTransferOutCode,
   MOVEMENT_SETTING_KEYS,
 } from './inventory-movement-config.js';
+import { createFcxpFromPurchaseEntry } from './inventory-purchase-fcxp.js';
 
 const ARTICLE_CODE_PAD = 4;
 const INTERNAL_LOT_PAD = 6;
@@ -143,6 +145,11 @@ export function formatMovement(row, details = []) {
     invoiceInternalNumber: row.invoice_internal_number || null,
     invoiceDocumentKind: row.invoice_document_kind || null,
     referenceNumber: row.reference_number,
+    supplierInvoiceNumber: row.supplier_invoice_number || null,
+    supplierInvoiceDate: row.supplier_invoice_date || null,
+    supplierInvoiceDueDate: row.supplier_invoice_due_date || null,
+    fcxpId: row.fcxp_id || null,
+    fcxpNumber: row.fcxp_number != null ? Number(row.fcxp_number) : null,
     notes: row.notes,
     totalQuantity: Number(row.total_quantity),
     totalValue: Number(row.total_value),
@@ -162,8 +169,8 @@ export function formatMovementDetail(row) {
     articleName: row.article_name || null,
     lotId: row.lot_id,
     internalLotNumber: row.internal_lot_number || null,
-    supplierLotNumber: row.supplier_lot_number || null,
-    expiryDate: row.expiry_date || null,
+    supplierLotNumber: row.supplier_lot_number || row.lot_supplier_lot_number || null,
+    expiryDate: row.expiry_date || row.lot_expiry_date || null,
     warehouseId: row.warehouse_id,
     quantity: Number(row.quantity),
     unitCost: Number(row.unit_cost),
@@ -293,7 +300,9 @@ export async function loadMovementDetails(db, movementId) {
   const { rows } = await db.query(
     `SELECT d.*,
             a.code AS article_code, a.name AS article_name,
-            l.internal_lot_number, l.supplier_lot_number, l.expiry_date
+            l.internal_lot_number,
+            l.supplier_lot_number AS lot_supplier_lot_number,
+            l.expiry_date AS lot_expiry_date
      FROM inventory_movement_details d
      JOIN inventory_articles a ON a.id = d.article_id
      LEFT JOIN inventory_lots l ON l.id = d.lot_id
@@ -509,6 +518,13 @@ export async function confirmInventoryMovement(client, companyId, movementId, us
   }
 
   const movSettings = await getInventoryMovementSettings(client, companyId);
+  const isPurchase = isPurchaseInCode(movement.movement_type_code, movSettings);
+  if (isPurchase && movement.direction !== 'entrada') {
+    throw Object.assign(
+      new Error('El tipo de compras a proveedores debe ser un movimiento de entrada'),
+      { status: 400 },
+    );
+  }
   const isTransferOut = isTransferOutCode(movement.movement_type_code, movSettings);
   if (isTransferOut && movement.related_movement_id) {
     throw Object.assign(new Error('Este traslado ya generó la recepción en bodega destino'), { status: 400 });
@@ -598,6 +614,16 @@ export async function confirmInventoryMovement(client, companyId, movementId, us
     totalValue += applied.totalCost;
   }
 
+  let purchaseFcxp = null;
+  if (isPurchase) {
+    purchaseFcxp = await createFcxpFromPurchaseEntry(client, {
+      companyId,
+      userId,
+      movement,
+      details: detailRows,
+    });
+  }
+
   let relatedEntryMovement = null;
   if (isTransferOut) {
     relatedEntryMovement = await createTransferEntryMovement(
@@ -626,6 +652,8 @@ export async function confirmInventoryMovement(client, companyId, movementId, us
     totalValue: round2(totalValue),
     relatedMovementId: relatedEntryMovement?.id || null,
     relatedMovementDocument: relatedEntryMovement?.document_number || null,
+    fcxpId: purchaseFcxp?.id || movement.fcxp_id || null,
+    fcxpNumber: purchaseFcxp?.cnsFcxp || null,
   };
 }
 
@@ -637,6 +665,7 @@ export async function listInventorySettings(db, companyId) {
     MOVEMENT_SETTING_KEYS.transferOut,
     MOVEMENT_SETTING_KEYS.transferIn,
     MOVEMENT_SETTING_KEYS.saleOut,
+    MOVEMENT_SETTING_KEYS.purchaseIn,
   ];
   const { rows } = await db.query(
     `SELECT var_key, var_value, label, description, sort_order, is_editable

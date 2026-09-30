@@ -11,6 +11,7 @@ Monorepo del ecosistema Conexa: ERP, API, facturación electrónica DIAN y chatb
 | [ServerFEpos](./ServerFEpos) | Facturación electrónica DIAN | 3000 |
 | [ChatBoot](./ChatBoot) | Chatbot WhatsApp / Meta | 3001* |
 | [Scripts](./Scripts) | Migraciones SQL y documentación | — |
+| [BaseConocimiento](./BaseConocimiento) | Manual de usuario: módulos, procesos y diccionario | — |
 
 \* ChatBoot usa el puerto 3001 en desarrollo para no chocar con ServerFEpos (3000). Configúralo en `ChatBoot/.env`.
 

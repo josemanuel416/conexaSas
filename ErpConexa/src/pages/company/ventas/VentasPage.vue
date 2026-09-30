@@ -77,6 +77,18 @@
                   <q-tooltip>Editar</q-tooltip>
                 </q-btn>
                 <q-btn
+                  v-if="canCloneCotizacion(props.row)"
+                  flat
+                  dense
+                  round
+                  size="sm"
+                  icon="content_copy"
+                  color="primary"
+                  @click="cloneDocument(props.row)"
+                >
+                  <q-tooltip>Clonar</q-tooltip>
+                </q-btn>
+                <q-btn
                   v-if="canConfirmCotizacion(props.row)"
                   flat
                   dense
@@ -157,6 +169,11 @@
       wide
       sales-document
     >
+      <q-banner v-if="cloneFromNumber" class="bg-blue-1 text-primary q-mb-md" dense rounded>
+        Copia de {{ cloneFromNumber }}. La fecha de emisión queda en hoy y la vigencia conserva los mismos días.
+        Puede cambiar el cliente, los ítems y la fecha de vigencia antes de guardar.
+      </q-banner>
+
       <q-banner v-if="docSaveError" class="bg-red-1 text-negative q-mb-md" dense rounded>
         <template #avatar>
           <q-icon name="error" color="negative" />
@@ -177,6 +194,15 @@
           input-debounce="0"
           hide-bottom-space
           @filter="filterClients"
+        />
+        <q-input
+          :model-value="docIssueDate"
+          type="date"
+          label="Fecha"
+          outlined
+          dense
+          readonly
+          hide-bottom-space
         />
         <q-input
           v-model="docForm.dueDate"
@@ -358,7 +384,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { api } from 'src/services/api.js'
@@ -435,6 +461,9 @@ const pdfDocumentId = ref('')
 const pdfDialogTitle = ref('Cotización')
 const docSaveError = ref('')
 const docId = ref(null)
+const docIssueDate = ref('')
+const cloneFromNumber = ref('')
+const suppressLineModeReset = ref(false)
 const convertTarget = ref(null)
 const sendTarget = ref(null)
 const selectedDoc = ref(null)
@@ -457,7 +486,7 @@ const clientEmailHint = computed(() => {
 })
 
 const baseColumns = [
-  { name: 'actions', label: 'Acciones', field: 'actions', align: 'left', style: 'width: 200px' },
+  { name: 'actions', label: 'Acciones', field: 'actions', align: 'left', style: 'width: 240px' },
   { name: 'expand', label: '', field: 'expand', align: 'center', style: 'width: 36px' },
   { name: 'internalNumber', label: 'Número', field: 'internalNumber', align: 'left', sortable: true, style: 'width: 110px' },
   { name: 'issueDate', label: 'Fecha', field: 'issueDate', align: 'left', sortable: true, style: 'width: 92px' },
@@ -503,10 +532,14 @@ watch(tab, () => {
 })
 
 watch(docDialog, (open) => {
-  if (!open) docSaveError.value = ''
+  if (!open) {
+    docSaveError.value = ''
+    cloneFromNumber.value = ''
+  }
 })
 
 watch(lineItemMode, (mode) => {
+  if (suppressLineModeReset.value) return
   if (!docDialog.value || docForm.kind !== 'cotizacion') return
   const lineType = mode === 'articulos' ? 'article' : 'service'
   docForm.lines = [emptyLine(lineType)]
@@ -558,33 +591,83 @@ function filterClients(val, update) {
   })
 }
 
-function defaultDueDate() {
-  const date = new Date()
-  date.setDate(date.getDate() + 30)
-  return date.toISOString().slice(0, 10)
+function localIsoDate(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }
 
-function openDocumentDialog(kind, row = null) {
+function todayLocal() {
+  return localIsoDate(new Date())
+}
+
+function addDays(isoDate, days) {
+  const [y, m, d] = isoDate.split('-').map(Number)
+  const date = new Date(y, m - 1, d)
+  date.setDate(date.getDate() + days)
+  return localIsoDate(date)
+}
+
+function validityDays(issueDate, dueDate) {
+  const issue = issueDate?.slice?.(0, 10)
+  const due = dueDate?.slice?.(0, 10)
+  if (!issue || !due) return 30
+  const [y1, m1, d1] = issue.split('-').map(Number)
+  const [y2, m2, d2] = due.split('-').map(Number)
+  const days = Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000)
+  return days > 0 ? days : 30
+}
+
+function defaultDueDate() {
+  return addDays(todayLocal(), 30)
+}
+
+function openDocumentDialog(kind, row = null, { clone = false } = {}) {
+  suppressLineModeReset.value = true
   docSaveError.value = ''
   docForm.kind = kind
-  docId.value = row?.id || null
+  docId.value = clone ? null : (row?.id || null)
+  cloneFromNumber.value = clone ? (row?.internalNumber || '') : ''
   docForm.clientId = row?.clientId || null
-  docForm.dueDate = row?.dueDate?.slice?.(0, 10) || defaultDueDate()
   docForm.notes = row?.notes || ''
+  if (clone && row) {
+    docIssueDate.value = todayLocal()
+    docForm.dueDate = addDays(docIssueDate.value, validityDays(row.issueDate, row.dueDate))
+  } else {
+    docIssueDate.value = row?.issueDate?.slice?.(0, 10) || todayLocal()
+    docForm.dueDate = row?.dueDate?.slice?.(0, 10) || defaultDueDate()
+  }
   if (row?.details?.length) {
     docForm.lines = row.details.map((d) => mapDetailToLine(d, articles.value))
     lineItemMode.value = kind === 'cotizacion' ? inferLineItemMode(row.details) : 'servicios'
   } else {
-    lineItemMode.value = kind === 'cotizacion' ? 'servicios' : 'servicios'
+    lineItemMode.value = 'servicios'
     docForm.lines = [emptyLine('service')]
   }
   docDialog.value = true
+  nextTick(() => {
+    suppressLineModeReset.value = false
+  })
 }
 
 async function editDocument(row) {
   try {
     const full = await api.ventas.document(row.id)
     openDocumentDialog(full.documentKind, full)
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e.message })
+  }
+}
+
+function canCloneCotizacion(row) {
+  return isCotizacionRow(row) && row.status !== 'anulada'
+}
+
+async function cloneDocument(row) {
+  try {
+    const full = await api.ventas.document(row.id)
+    openDocumentDialog('cotizacion', full, { clone: true })
   } catch (e) {
     $q.notify({ type: 'negative', message: e.message })
   }

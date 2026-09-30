@@ -292,7 +292,7 @@
 
 .sales-doc-header {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+  grid-template-columns: minmax(0, 2fr) minmax(160px, 1fr) minmax(160px, 1fr);
   gap: 16px 24px;
   align-items: start;
 }
@@ -435,6 +435,35 @@
 
   .sales-doc-lines__row .col-actions {
     justify-self: end;
+  }
+}
+
+.sales-doc-lines.inv-move-lines--entry .sales-doc-lines__head,
+.sales-doc-lines.inv-move-lines--entry .sales-doc-lines__row {
+  grid-template-columns: minmax(180px, 2fr) 80px 110px 130px 120px 100px 32px;
+}
+
+.sales-doc-lines.inv-move-lines--exit .sales-doc-lines__head,
+.sales-doc-lines.inv-move-lines--exit .sales-doc-lines__row {
+  grid-template-columns: minmax(180px, 2fr) minmax(150px, 1.4fr) 80px 110px 32px;
+}
+
+.sales-doc-lines.inv-move-lines--sale .sales-doc-lines__head,
+.sales-doc-lines.inv-move-lines--sale .sales-doc-lines__row {
+  grid-template-columns: minmax(180px, 2fr) minmax(140px, 1.3fr) 80px 110px 100px 32px;
+}
+
+@media (max-width: 1023px) {
+  .sales-doc-lines.inv-move-lines--entry .sales-doc-lines__row,
+  .sales-doc-lines.inv-move-lines--exit .sales-doc-lines__row,
+  .sales-doc-lines.inv-move-lines--sale .sales-doc-lines__row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sales-doc-lines.inv-move-lines--entry .col-article,
+  .sales-doc-lines.inv-move-lines--exit .col-article,
+  .sales-doc-lines.inv-move-lines--sale .col-article {
+    grid-column: 1 / -1;
   }
 }
 

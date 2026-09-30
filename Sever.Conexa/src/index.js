@@ -35,6 +35,10 @@ import {
   createUser,
   updateUser,
   updateUserPermissions,
+  uploadUserSignature,
+  uploadUserSignatureMiddleware,
+  deleteUserSignature,
+  getUserSignature,
 } from './routes/company/users.js';
 import agendaRouter from './routes/company/agenda.js';
 import ventasRouter from './routes/company/ventas.js';
@@ -60,6 +64,7 @@ import {
   updateSupportTicketStatus,
 } from './routes/admin/support.js';
 import supportRouter from './routes/company/support.js';
+import ayudaRouter, { liftAyudaVideoCookie } from './routes/company/ayuda.js';
 import { pingFePos } from './utils/fepos-client.js';
 
 const app = express();
@@ -151,6 +156,10 @@ company.get('/users/:id', getUser);
 company.post('/users', createUser);
 company.put('/users/:id', updateUser);
 company.put('/users/:id/permissions', updateUserPermissions);
+company.get('/users/:id/signature', getUserSignature);
+company.post('/users/:id/signature', uploadUserSignatureMiddleware, uploadUserSignature);
+company.delete('/users/:id/signature', deleteUserSignature);
+app.use('/api/company', liftAyudaVideoCookie);
 app.use('/api/company', company);
 
 const companyAgenda = express.Router();
@@ -193,6 +202,12 @@ companySupport.use(authMiddleware, requireMatchingTenantHost, requireCompanyUser
 companySupport.use('/support', supportRouter);
 app.use('/api/company', companySupport);
 
+const companyAyuda = express.Router();
+companyAyuda.use(liftAyudaVideoCookie);
+companyAyuda.use(authMiddleware, requireMatchingTenantHost, requireCompanyUser);
+companyAyuda.use('/ayuda', ayudaRouter);
+app.use('/api/company', companyAyuda);
+
 function mountPublishedWeb() {
   const webRoot = config.webRoot;
   if (!webRoot) return;
@@ -217,7 +232,7 @@ app.use((err, _req, res, _next) => {
       : err.message;
     return res.status(400).json({ error: message });
   }
-  if (err?.message?.includes('Solo se permiten imágenes')) {
+  if (err?.message?.includes('Solo se permiten imágenes') || err?.message?.includes('La firma debe')) {
     return res.status(400).json({ error: err.message });
   }
   console.error(err);

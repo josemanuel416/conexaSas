@@ -10,6 +10,9 @@
 **/dist/
 **/.quasar/
 
+# Grabaciones intermedias de los manuales
+BaseConocimiento/recorridos/tmp/
+
 # Logs y certificados sensibles
 **/logs/
 Scripts/windows-services/tools/

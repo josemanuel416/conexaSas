@@ -51,6 +51,7 @@ export const MODULE_MENUS = {
       { label: 'Existencias', icon: 'inventory', to: '/inventario', query: { tab: 'existencias' } },
       { label: 'Bodegas', icon: 'warehouse', to: '/inventario/configuracion', query: { tab: 'bodegas' } },
       { label: 'Artículos', icon: 'category', to: '/inventario/configuracion', query: { tab: 'articulos' } },
+      { label: 'Tipos de movimiento', icon: 'swap_vert', to: '/inventario/configuracion', query: { tab: 'tipos-movimiento' } },
     ],
   },
   contabilidad: {

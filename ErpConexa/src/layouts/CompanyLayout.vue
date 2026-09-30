@@ -182,6 +182,8 @@
     <q-page-container :class="{ 'company-page-container--rail': !drawer && sectionMenuItems.length }">
       <router-view />
     </q-page-container>
+
+    <HelpChatWidget />
   </q-layout>
 </template>
 
@@ -189,6 +191,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getAuth, clearAuth } from 'src/utils/auth.js'
+import HelpChatWidget from 'src/components/company/HelpChatWidget.vue'
 import { applyCompanyTheme, themeHeaderStyle, getThemeFromAuth } from 'src/utils/company-theme.js'
 import {
   getModuleMenu,

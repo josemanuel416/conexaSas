@@ -1,0 +1,15 @@
+{
+  "name": "base-conocimiento",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Base de conocimiento de Conexa: módulos, procesos y diccionario de datos",
+  "main": "src/search.js",
+  "scripts": {
+    "manuales:preparar": "node recorridos/preparar-demo.mjs",
+    "manuales:grabar": "node recorridos/preparar-demo.mjs && node recorridos/grabar.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.55.0"
+  }
+}

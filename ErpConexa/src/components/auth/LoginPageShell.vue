@@ -1,5 +1,6 @@
 <template>
   <q-page class="login-page flex flex-center">
+    <div class="login-page__bg" aria-hidden="true" />
     <div class="login-page__container">
       <q-btn
         flat
@@ -45,13 +46,42 @@ const brandAssets = BRAND_ASSETS
 
 <style scoped>
 .login-page {
+  position: relative;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0d47a1 0%, #1976d2 55%, #1565c0 100%);
+  background: linear-gradient(160deg, #0d47a1 0%, #1565c0 52%, #1976d2 100%);
   padding: 24px 16px;
 }
+.login-page__bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.login-page__bg::before,
+.login-page__bg::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+}
+.login-page__bg::before {
+  width: 320px;
+  height: 320px;
+  top: -110px;
+  right: -90px;
+  background: rgba(0, 229, 255, 0.16);
+}
+.login-page__bg::after {
+  width: 240px;
+  height: 240px;
+  bottom: -90px;
+  left: -70px;
+  background: rgba(255, 255, 255, 0.1);
+}
 .login-page__container {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  max-width: 440px;
+  max-width: 420px;
 }
 .login-page__back {
   color: rgba(255, 255, 255, 0.95);
@@ -60,15 +90,15 @@ const brandAssets = BRAND_ASSETS
 }
 .login-card {
   width: 100%;
-  border-radius: 16px;
+  border-radius: 22px;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+  border-top: 3px solid #00e5ff;
+  box-shadow: 0 24px 56px rgba(4, 20, 40, 0.28) !important;
 }
 .login-card__brand-panel {
   background: #fff;
-  padding: 16px 20px 12px;
+  padding: 18px 20px 8px;
   text-align: center;
-  border-bottom: 1px solid #eef2f4;
 }
 .login-card__logo {
   width: 100%;
@@ -102,11 +132,39 @@ const brandAssets = BRAND_ASSETS
 </style>
 
 <style>
+.login-page .q-field--outlined .q-field__control {
+  border-radius: 12px;
+  background: #f3f7fb;
+}
+.login-page .q-field--outlined .q-field__control:before {
+  border-color: #d5e3f0;
+}
+.login-page .q-field--focused .q-field__control {
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.16);
+}
+.login-page .q-field--error .q-field__control {
+  background: #fff;
+  box-shadow: none;
+}
 .login-page .login-submit-btn {
-  background: #1976d2 !important;
+  min-height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #0d47a1, #1976d2) !important;
   color: #fff !important;
+  box-shadow: 0 10px 20px rgba(13, 71, 161, 0.28);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 .login-page .login-submit-btn:hover {
-  background: #1565c0 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(13, 71, 161, 0.34);
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-page .login-submit-btn {
+    transition: none;
+  }
+  .login-page .login-submit-btn:hover {
+    transform: none;
+  }
 }
 </style>

@@ -5,6 +5,7 @@ import PDFDocument from 'pdfkit';
 import QRCode from 'qrcode';
 import { dianEnvironmentLabel as envLabel } from './dian-environment.js';
 import { resolveProjectPath } from '../project-root.js';
+import { resolveUserSignatureAbsolute } from './user-signature.js';
 import { CONEXASOFT_INVOICE_BRAND } from '../config/conexasoft-brand.js';
 
 const PAGE_MARGIN = 40;
@@ -192,6 +193,7 @@ function drawTableRow(doc, x, y, pageWidth, cols, values, borderColor = '#e0e0e0
  *   client: object,
  *   resolution: object,
  *   signedXml?: string,
+ *   preparedBy?: object,
  * }} params
  * @returns {Promise<Buffer>}
  */
@@ -201,6 +203,7 @@ export async function buildInvoicePdf({
   client,
   resolution,
   signedXml,
+  preparedBy = null,
 }) {
   const signedMeta = extractSignedMeta(signedXml);
   const cufe = signedMeta.cufe || invoice.cufe || '';
@@ -426,6 +429,29 @@ export async function buildInvoicePdf({
         { width: pageWidth - 20 }
       );
     y += 56;
+
+    const authorSignature = resolveUserSignatureAbsolute(preparedBy?.signature_path);
+    if (authorSignature) {
+      const boxH = 54;
+      if (y + boxH > doc.page.height - PAGE_MARGIN) {
+        doc.addPage();
+        y = PAGE_MARGIN;
+      }
+      const authorName = String(preparedBy.full_name || '').trim();
+      drawBox(doc, PAGE_MARGIN, y, 240, boxH, brand.lightFill, brand.border);
+      doc.font('Helvetica-Bold').fontSize(8).fillColor(brand.label)
+        .text('Elaboró', PAGE_MARGIN + 10, y + 8, { width: 220 });
+      if (authorName) {
+        doc.font('Helvetica').fontSize(8).fillColor('#212121')
+          .text(authorName, PAGE_MARGIN + 10, y + 20, { width: 100 });
+      }
+      try {
+        doc.image(authorSignature, PAGE_MARGIN + 112, y + 8, { fit: [116, 38], align: 'center', valign: 'center' });
+      } catch {
+        // continuar sin imagen si el archivo no es válido
+      }
+      y += boxH + 8;
+    }
 
     doc.font('Helvetica').fontSize(7).fillColor(brand.label)
       .text(

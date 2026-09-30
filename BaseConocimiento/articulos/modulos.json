@@ -1,0 +1,83 @@
+[
+  {
+    "id": "mod-inicio",
+    "kind": "modulo",
+    "module": "general",
+    "title": "Cómo está organizado Conexa",
+    "summary": "Mapa de módulos y del botón de ayuda.",
+    "keywords": ["inicio", "modulos", "ayuda", "manual", "conexa"],
+    "body": "Conexa separa la operación en ventas, facturación, inventario, cuentas por pagar, caja, agenda y contabilidad. En cada pantalla, el botón Ayuda queda a la derecha del título y abre el manual de esa pantalla. Desde el chat puede abrir el manual de otro módulo o proceso."
+  },
+  {
+    "id": "mod-ventas",
+    "kind": "modulo",
+    "module": "ventas",
+    "title": "Módulo de ventas",
+    "summary": "Cotizaciones y prefacturas para el cliente.",
+    "keywords": ["ventas", "cotizacion", "cotizaciones", "prefactura", "cliente", "clonar"],
+    "body": "Ventas prepara el documento comercial antes de la factura DIAN.\n\nEn Cotización crea la propuesta, confirma, clona o envía al cliente. En Prefacturas deja el documento listo para convertirlo en factura.\n\nClientes y servicios se administran en Ventas y facturación. La firma que sale en el PDF es la del usuario que elaboró el documento."
+  },
+  {
+    "id": "mod-facturacion",
+    "kind": "modulo",
+    "module": "facturacion",
+    "title": "Módulo de facturación",
+    "summary": "Facturas, notas crédito y envío a la DIAN.",
+    "keywords": ["factura", "facturacion", "dian", "nota credito", "cufe", "resolucion", "electronica"],
+    "body": "Facturación emite el documento electrónico y hace el seguimiento ante la DIAN.\n\nEn Factura ve los documentos tipo 01. En Notas crédito registra el tipo 91. En Seguimiento DIAN consulta el envío, la respuesta y el estado.\n\nLa numeración sale de una resolución activa. Según el ambiente de la compañía, el envío va a habilitación, pruebas o producción."
+  },
+  {
+    "id": "mod-inventario",
+    "kind": "modulo",
+    "module": "inventario",
+    "title": "Módulo de inventario",
+    "summary": "Bodegas, artículos, movimientos y existencias.",
+    "keywords": ["inventario", "bodega", "articulo", "existencia", "movimiento", "lote", "entrada", "salida"],
+    "body": "Inventario controla cantidades y costos por bodega, artículo y lote.\n\nMovimientos registra entradas, salidas y traslados. Puede abrir la fila para ver el detalle y, si está en borrador, cambiar las líneas. Existencias muestra el stock. Bodegas, artículos y tipos de movimiento se configuran en el mismo módulo.\n\nLa variable Compras a proveedores indica qué tipo de entrada genera la cuenta por pagar al confirmar."
+  },
+  {
+    "id": "mod-cxp",
+    "kind": "modulo",
+    "module": "cuentas_pagar",
+    "title": "Módulo de cuentas por pagar",
+    "summary": "Facturas de proveedor y documento soporte.",
+    "keywords": ["cuentas por pagar", "cxp", "proveedor", "documento soporte", "fcxp"],
+    "body": "Cuentas por pagar registra lo que la compañía debe a un proveedor.\n\nPuede crearla a mano o dejar que se genere al confirmar una entrada de inventario por compra. Si el proveedor maneja documento soporte, la CxP toma el consecutivo de la resolución DS tipo 05.\n\nLas notas débito y crédito de proveedor se manejan sobre la cuenta ya confirmada."
+  },
+  {
+    "id": "mod-caja",
+    "kind": "modulo",
+    "module": "caja",
+    "title": "Módulo de caja",
+    "summary": "Apertura de caja, recibos e historial.",
+    "keywords": ["caja", "recibo", "turno", "apertura", "cierre", "efectivo"],
+    "body": "Caja registra el dinero del punto de operación.\n\nEn Operación abre el turno, registra ingresos y egresos y cierra la sesión. En Cajas define los puntos. En Historial consulta turnos anteriores.\n\nUn recibo puede quedar ligado a una factura cuando el cobro corresponde a una venta."
+  },
+  {
+    "id": "mod-agenda",
+    "kind": "modulo",
+    "module": "agenda_citas",
+    "title": "Módulo de agenda",
+    "summary": "Citas, profesionales y modelos de horario.",
+    "keywords": ["agenda", "cita", "profesional", "horario", "paciente"],
+    "body": "Agenda organiza las citas de la compañía.\n\nEn Agenda programa y cambia el estado de la cita. Profesionales, servicios y clientes alimentan la programación. Modelos define la disponibilidad. Facturado muestra las citas que ya pasaron a documento de venta."
+  },
+  {
+    "id": "mod-contabilidad",
+    "kind": "modulo",
+    "module": "contabilidad",
+    "title": "Módulo de contabilidad",
+    "summary": "Comprobantes manuales, cierre y reportes.",
+    "keywords": ["contabilidad", "asiento", "puc", "balance", "cierre", "comprobante"],
+    "body": "Contabilidad lleva el plan de cuentas, los comprobantes y los reportes.\n\nEl movimiento diario se elabora de forma manual: ventas, caja e inventario todavía no generan el asiento solos. El cierre de mes bloquea el periodo. Los reportes incluyen balance de prueba, libros auxiliares y balance general.\n\nPlan de cuentas, comprobantes, centros de costo, periodos e impuestos están en la configuración del módulo."
+  },
+  {
+    "id": "mod-usuarios",
+    "kind": "modulo",
+    "module": "usuarios",
+    "title": "Usuarios y permisos",
+    "summary": "Accesos de la compañía y firma del elaborador.",
+    "keywords": ["usuario", "permiso", "firma", "administrador", "elaborado"],
+    "body": "Cada compañía tiene sus usuarios. El administrador crea cuentas y asigna permisos por módulo.\n\nEn la ficha del usuario puede cargar una imagen de firma. Esa firma se imprime en cotizaciones, prefacturas y facturas, en el bloque Elaborado, a nombre de quien creó el documento."
+  }
+]

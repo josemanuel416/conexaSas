@@ -1,6 +1,25 @@
 import bcrypt from 'bcryptjs';
+import multer from 'multer';
+import path from 'path';
 import { pool } from '../../db/pool.js';
 import { normalizeEmail, normalizePassword } from '../../utils/normalize.js';
+import {
+  deleteUserSignatureFile,
+  resolveUserSignatureAbsolute,
+  saveUserSignatureFile,
+  signatureExtension,
+} from '../../utils/user-signature.js';
+
+const signatureUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter(_req, file, cb) {
+    if (signatureExtension(file.mimetype)) cb(null, true);
+    else cb(new Error('La firma debe ser PNG, JPG o WEBP'));
+  },
+});
+
+export const uploadUserSignatureMiddleware = signatureUpload.single('signature');
 
 function formatUser(u) {
   return {
@@ -11,6 +30,7 @@ function formatUser(u) {
     isActive: u.is_active,
     cashRegisterId: u.cash_register_id || null,
     cashRegisterName: u.cash_register_name || null,
+    hasSignature: Boolean(u.signature_path),
     lastLogin: u.last_login,
     permissionCount: Number(u.permission_count) || 0,
     createdAt: u.created_at,
@@ -282,6 +302,60 @@ export async function updateUser(req, res) {
   } finally {
     client.release();
   }
+}
+
+async function findCompanyUser(userId, companyId) {
+  const { rows } = await pool.query(
+    `SELECT * FROM users WHERE id = $1 AND company_id = $2 AND role != 'super_admin'`,
+    [userId, companyId],
+  );
+  return rows[0] || null;
+}
+
+export async function uploadUserSignature(req, res) {
+  if (!req.file) {
+    return res.status(400).json({ error: 'Archivo de firma requerido' });
+  }
+
+  const user = await findCompanyUser(req.params.id, req.user.companyId);
+  if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+  const signaturePath = saveUserSignatureFile(user.id, req.file.buffer, req.file.mimetype);
+  const { rows } = await pool.query(
+    `UPDATE users SET signature_path = $1, updated_at = NOW()
+     WHERE id = $2 AND company_id = $3
+     RETURNING *`,
+    [signaturePath, user.id, req.user.companyId],
+  );
+  res.json(formatUser(rows[0]));
+}
+
+export async function deleteUserSignature(req, res) {
+  const user = await findCompanyUser(req.params.id, req.user.companyId);
+  if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+  deleteUserSignatureFile(user.signature_path);
+  const { rows } = await pool.query(
+    `UPDATE users SET signature_path = NULL, updated_at = NOW()
+     WHERE id = $1 AND company_id = $2
+     RETURNING *`,
+    [user.id, req.user.companyId],
+  );
+  res.json(formatUser(rows[0]));
+}
+
+export async function getUserSignature(req, res) {
+  const user = await findCompanyUser(req.params.id, req.user.companyId);
+  if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+  const absolutePath = resolveUserSignatureAbsolute(user.signature_path);
+  if (!absolutePath) return res.status(404).json({ error: 'El usuario no tiene firma' });
+
+  const ext = path.extname(absolutePath).toLowerCase();
+  const mime = ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : 'image/jpeg';
+  res.setHeader('Content-Type', mime);
+  res.setHeader('Cache-Control', 'private, max-age=60');
+  res.sendFile(absolutePath);
 }
 
 export async function updateUserPermissions(req, res) {

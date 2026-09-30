@@ -4,31 +4,35 @@ export const MOVEMENT_SETTING_KEYS = {
   transferOut: 'inventory.movement.transfer_out_code',
   transferIn: 'inventory.movement.transfer_in_code',
   saleOut: 'inventory.movement.sale_out_code',
+  purchaseIn: 'inventory.movement.purchase_in_code',
 };
 
 const DEFAULTS = {
   transferOut: '09',
   transferIn: '10',
   saleOut: '02',
+  purchaseIn: '01',
 };
 
 export async function getInventoryMovementSettings(db, companyId) {
-  const [transferOut, transferIn, saleOut] = await Promise.all([
+  const [transferOut, transferIn, saleOut, purchaseIn] = await Promise.all([
     getCompanyVariable(db, companyId, MOVEMENT_SETTING_KEYS.transferOut),
     getCompanyVariable(db, companyId, MOVEMENT_SETTING_KEYS.transferIn),
     getCompanyVariable(db, companyId, MOVEMENT_SETTING_KEYS.saleOut),
+    getCompanyVariable(db, companyId, MOVEMENT_SETTING_KEYS.purchaseIn),
   ]);
 
   const codes = {
     transferOut: String(transferOut || DEFAULTS.transferOut).trim().toUpperCase(),
     transferIn: String(transferIn || DEFAULTS.transferIn).trim().toUpperCase(),
     saleOut: String(saleOut || DEFAULTS.saleOut).trim().toUpperCase(),
+    purchaseIn: String(purchaseIn || DEFAULTS.purchaseIn).trim().toUpperCase(),
   };
 
   const { rows } = await db.query(
     `SELECT id, code, name, direction FROM inventory_movement_types
      WHERE company_id = $1 AND code = ANY($2) AND is_active = true`,
-    [companyId, [codes.transferOut, codes.transferIn, codes.saleOut]],
+    [companyId, [codes.transferOut, codes.transferIn, codes.saleOut, codes.purchaseIn]],
   );
 
   const byCode = Object.fromEntries(rows.map((r) => [r.code, r]));
@@ -38,6 +42,8 @@ export async function getInventoryMovementSettings(db, companyId) {
     transferOutTypeId: byCode[codes.transferOut]?.id || null,
     transferInTypeId: byCode[codes.transferIn]?.id || null,
     saleOutTypeId: byCode[codes.saleOut]?.id || null,
+    purchaseInTypeId: byCode[codes.purchaseIn]?.id || null,
+    purchaseInDirection: byCode[codes.purchaseIn]?.direction || null,
   };
 }
 
@@ -51,6 +57,10 @@ export function isTransferInCode(code, settings) {
 
 export function isSaleOutCode(code, settings) {
   return String(code).toUpperCase() === settings.saleOut;
+}
+
+export function isPurchaseInCode(code, settings) {
+  return String(code).toUpperCase() === settings.purchaseIn;
 }
 
 export function isTransferMovementCode(code, settings) {

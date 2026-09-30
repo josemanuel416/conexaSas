@@ -363,12 +363,43 @@ onMounted(async () => {
   font-size: 0.95rem;
   margin: 0;
 }
+.landing-card,
+.landing-benefit,
+.landing-step {
+  position: relative;
+  overflow: hidden;
+}
+.landing-card::before,
+.landing-benefit::before,
+.landing-step::before,
+.landing-plan::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0d47a1, #1976d2 62%, #00e5ff);
+}
+.landing-card,
+.landing-benefit,
+.landing-plan,
+.landing-step {
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.landing-card:hover,
+.landing-benefit:hover,
+.landing-plan:hover,
+.landing-step:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(13, 71, 161, 0.14);
+}
 .landing-card {
   background: white;
   border-radius: 12px;
   padding: 16px 18px;
   height: 100%;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 16px rgba(13, 71, 161, 0.06);
 }
 .landing-card__title {
   font-size: 1.1rem;
@@ -384,7 +415,7 @@ onMounted(async () => {
   border-radius: 10px;
   padding: 14px 16px;
   height: 100%;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 12px rgba(13, 71, 161, 0.06);
 }
 .landing-benefit h3 {
   font-size: 1rem;
@@ -403,11 +434,14 @@ onMounted(async () => {
   height: 100%;
   border: 2px solid #e8ecef;
   position: relative;
+  overflow: hidden;
 }
 .landing-plan--featured {
   border-color: #1976d2;
   box-shadow: 0 8px 24px rgba(25, 118, 210, 0.15);
-  transform: none;
+}
+.landing-plan--featured:hover {
+  box-shadow: 0 16px 36px rgba(25, 118, 210, 0.22);
 }
 .landing-plan__ribbon {
   position: absolute;
@@ -472,8 +506,7 @@ onMounted(async () => {
   padding: 18px 16px;
   height: 100%;
   text-align: center;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05);
-  position: relative;
+  box-shadow: 0 2px 16px rgba(13, 71, 161, 0.06);
 }
 .landing-step__num {
   position: absolute;
@@ -551,5 +584,19 @@ onMounted(async () => {
   font-size: 0.85rem;
   opacity: 0.88;
   line-height: 1.4;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-card,
+  .landing-benefit,
+  .landing-plan,
+  .landing-step {
+    transition: none;
+  }
+  .landing-card:hover,
+  .landing-benefit:hover,
+  .landing-plan:hover,
+  .landing-step:hover {
+    transform: none;
+  }
 }
 </style>

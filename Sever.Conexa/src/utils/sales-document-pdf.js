@@ -1,5 +1,6 @@
 import PDFDocument from 'pdfkit';
 import { resolveCompanyLogoAbsolute } from './company-logo.js';
+import { resolveUserSignatureAbsolute } from './user-signature.js';
 import { CONEXASOFT_INVOICE_BRAND } from '../config/conexasoft-brand.js';
 import { formatDateEs as formatDate, formatPrintDateTime } from './app-timezone.js';
 
@@ -285,7 +286,8 @@ function drawTotalsAndNotes(doc, y, pageWidth, brand, totals, notes) {
 }
 
 function drawSignatureBlock(doc, y, pageWidth, brand, preparedBy) {
-  const boxH = SIGNATURE_H;
+  const signaturePath = resolveUserSignatureAbsolute(preparedBy?.signature_path || preparedBy?.signaturePath);
+  const boxH = signaturePath ? 118 : SIGNATURE_H;
   const colW = pageWidth / 3;
   const code = userCode(preparedBy);
   const name = userName(preparedBy);
@@ -318,6 +320,17 @@ function drawSignatureBlock(doc, y, pageWidth, brand, preparedBy) {
         .text(line, x + 8, ty, { width: colW - 16 });
       ty += 11;
     });
+    if (i === 0 && signaturePath) {
+      try {
+        doc.image(signaturePath, x + 16, ty + 2, {
+          fit: [colW - 32, 40],
+          align: 'center',
+          valign: 'center',
+        });
+      } catch {
+        // continuar sin imagen si el archivo no es válido
+      }
+    }
     const lineY = y + boxH - 18;
     doc.moveTo(x + 14, lineY).lineTo(x + colW - 14, lineY).strokeColor('#9E9E9E').lineWidth(0.6).stroke();
     doc.font('Helvetica').fontSize(6).fillColor('#9E9E9E')
@@ -428,7 +441,10 @@ export function buildSalesDocumentPdf({ company, document, client, preparedBy = 
 
     y += 16;
 
-    y = ensureSpace(doc, y, SIGNATURE_H + 12);
+    const signatureBoxH = resolveUserSignatureAbsolute(
+      preparedBy?.signature_path || preparedBy?.signaturePath,
+    ) ? 118 : SIGNATURE_H;
+    y = ensureSpace(doc, y, signatureBoxH + 12);
     drawSignatureBlock(doc, y, pageWidth, brand, preparedBy);
 
     const range = doc.bufferedPageRange();

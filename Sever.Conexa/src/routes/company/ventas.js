@@ -50,6 +50,7 @@ import {
 import { yearFromDateValue } from '../../utils/app-timezone.js';
 import { buildInvoicePdf, buildInvoicePdfFileName } from '../../utils/invoice-pdf.js';
 import { buildSalesDocumentPdf, buildSalesDocumentPdfFileName } from '../../utils/sales-document-pdf.js';
+import { loadUserAuthor } from '../../utils/user-signature.js';
 import { buildInvoiceClientEmailContent } from '../../utils/invoice-email-template.js';
 import { sendInvoicePackageEmail, sendInvoiceEmailToClient } from '../../utils/invoice-email.js';
 import { buildInvoiceClientPackage } from '../../utils/invoice-delivery.js';
@@ -361,7 +362,7 @@ async function loadSalesDocumentContext(documentId, companyId, printedByUserId =
   let usersById = {};
   if (userIds.length) {
     const { rows: userRows } = await pool.query(
-      `SELECT id, email, full_name FROM users WHERE id = ANY($1::uuid[])`,
+      `SELECT id, email, full_name, signature_path FROM users WHERE id = ANY($1::uuid[])`,
       [userIds],
     );
     usersById = Object.fromEntries(userRows.map((u) => [u.id, u]));
@@ -2955,6 +2956,7 @@ router.get('/invoices/:id/pdf', requirePermission('ventas.acceso'), async (req, 
       client: formatClient(clientRows[0]),
       resolution: formatResolution(resolutionRows[0]),
       signedXml: submissionRows[0]?.signed_xml || null,
+      preparedBy: await loadUserAuthor(pool, invoice.createdBy),
     });
   } catch (err) {
     console.error('[invoice-pdf]', err);
