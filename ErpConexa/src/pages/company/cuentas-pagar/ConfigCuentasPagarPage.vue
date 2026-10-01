@@ -120,7 +120,7 @@ import { useQuasar } from 'quasar'
 import CompanyPageHeader from 'src/components/company/CompanyPageHeader.vue'
 import CompanyFormDialog from 'src/components/company/CompanyFormDialog.vue'
 import { api } from 'src/services/api.js'
-import { hasPermission } from 'src/utils/permissions.js'
+import { hasPermission } from 'src/utils/auth.js'
 
 const $q = useQuasar()
 

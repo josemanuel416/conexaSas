@@ -9,6 +9,8 @@ const routes = [
     meta: { public: true },
     children: [
       { path: '', component: () => import('pages/public/LandingPage.vue') },
+      { path: 'paquetes', component: () => import('pages/public/PackagesPage.vue') },
+      { path: 'contacto', component: () => import('pages/public/ContactPage.vue') },
     ],
   },
 

@@ -8,13 +8,15 @@
             <h1 class="landing-hero__title">{{ site.heroTitle || 'ConexaSoft ERP' }}</h1>
             <p class="landing-hero__subtitle">{{ site.heroSubtitle || tagline }}</p>
             <div class="row q-gutter-sm landing-hero__actions">
-              <q-btn unelevated color="white" text-color="primary" no-caps label="Solicitar demo" href="#contacto" />
+              <q-btn unelevated color="white" text-color="primary" no-caps label="Solicitar demo" to="/contacto" />
               <q-btn outline color="white" no-caps label="Ingresar" to="/login" />
             </div>
           </div>
           <div class="col-12 col-md-6 flex flex-center">
-            <div class="landing-hero__logo-panel">
-              <img :src="brandAssets.logoLightPng" alt="ConexaSoft" class="landing-hero__logo-img" />
+            <div class="brand-card" tabindex="0">
+              <span class="brand-card__burst" aria-hidden="true" />
+              <img :src="brandAssets.icon" alt="" class="brand-card__icon" />
+              <img :src="brandAssets.logoDark" alt="ConexaSoft" class="brand-card__word" />
             </div>
           </div>
         </div>
@@ -119,35 +121,7 @@
           <h2 class="landing-section__title">Paquetes</h2>
           <p class="landing-section__lead">Elija el plan que mejor se adapte a su operación.</p>
         </div>
-        <div class="row q-col-gutter-md justify-center">
-          <div v-for="plan in plans" :key="plan.id" class="col-12 col-md-4">
-            <div class="landing-plan" :class="{ 'landing-plan--featured': plan.isFeatured }">
-              <div v-if="plan.isFeatured" class="landing-plan__ribbon">Recomendado</div>
-              <h3>{{ plan.name }}</h3>
-              <p class="landing-plan__desc">{{ plan.description }}</p>
-              <div class="landing-plan__price">
-                <span class="landing-plan__amount">${{ formatMoney(plan.priceMonthly) }}</span>
-                <span class="landing-plan__period">/ mes</span>
-              </div>
-              <div v-if="plan.priceYearly" class="text-caption text-grey-7 q-mb-md">
-                o ${{ formatMoney(plan.priceYearly) }} / año
-              </div>
-              <ul class="landing-plan__features">
-                <li v-for="(f, i) in plan.features" :key="i">
-                  <q-icon name="check" color="positive" size="16px" /> {{ f }}
-                </li>
-              </ul>
-              <q-btn
-                unelevated
-                :color="plan.isFeatured ? 'primary' : 'grey-8'"
-                class="full-width q-mt-md"
-                no-caps
-                label="Contactar"
-                href="#contacto"
-              />
-            </div>
-          </div>
-        </div>
+        <PlanCards />
       </div>
     </section>
 
@@ -202,13 +176,13 @@ import { ref, reactive, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { api } from 'src/services/api.js'
 import { BRAND_ASSETS, BRAND_TAGLINE } from 'src/config/brand-assets.js'
+import PlanCards from 'src/components/public/PlanCards.vue'
 
 const $q = useQuasar()
 const brandAssets = BRAND_ASSETS
 const tagline = BRAND_TAGLINE
 
 const site = ref({ benefits: [], contact: {} })
-const plans = ref([])
 const sending = ref(false)
 
 const contactForm = reactive({
@@ -260,17 +234,8 @@ const aiPillars = [
 
 const req = (v) => !!v?.trim?.() || !!v || 'Requerido'
 
-function formatMoney(v) {
-  return Number(v || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })
-}
-
 async function loadData() {
-  const [siteData, plansData] = await Promise.all([
-    api.public.site(),
-    api.public.plans(),
-  ])
-  site.value = siteData
-  plans.value = plansData
+  site.value = await api.public.site()
 }
 
 async function submitContact() {
@@ -331,20 +296,130 @@ onMounted(async () => {
 .landing-hero__actions {
   margin-top: 10px;
 }
-.landing-hero__logo-panel {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 10px 14px 8px;
-  width: min(100%, 360px);
-  text-align: center;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+.brand-card {
+  position: relative;
+  width: min(100%, 340px);
+  height: 176px;
+  border-radius: 20px;
+  background: #071428;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
 }
-.landing-hero__logo-img {
-  width: 100%;
-  max-width: 280px;
+.brand-card__burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 50% 42%, #1565c0 0%, #0d47a1 72%);
+  box-shadow: 0 0 0 3px #00e5ff, 0 0 26px rgba(0, 229, 255, 0.72);
+  transition: width 0.55s ease, height 0.55s ease, border-radius 0.55s ease, box-shadow 0.55s ease, background 0.55s ease;
+  animation: brand-burst 2.8s ease 0.5s 1;
+}
+.brand-card__icon,
+.brand-card__word {
+  position: relative;
+  z-index: 1;
+}
+.brand-card__icon {
+  width: 68px;
+  height: 68px;
+  transition: opacity 0.4s ease, transform 0.5s ease;
+  animation: brand-icon 2.8s ease 0.5s 1;
+}
+.brand-card__word {
+  position: absolute;
+  width: 88%;
   height: auto;
-  display: block;
-  margin: 0 auto;
+  opacity: 0;
+  transform: scale(0.88);
+  transition: opacity 0.45s ease 0.12s, transform 0.45s ease 0.12s;
+  animation: brand-word 2.8s ease 0.5s 1;
+}
+.brand-card:hover .brand-card__burst,
+.brand-card:focus .brand-card__burst,
+.brand-card:focus-visible .brand-card__burst {
+  width: 150%;
+  height: 280%;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #0d47a1, #1976d2 58%, #0288d1);
+  box-shadow: none;
+  animation: none;
+}
+.brand-card:hover .brand-card__icon,
+.brand-card:focus .brand-card__icon,
+.brand-card:focus-visible .brand-card__icon {
+  opacity: 0;
+  transform: scale(1.12);
+  animation: none;
+}
+.brand-card:hover .brand-card__word,
+.brand-card:focus .brand-card__word,
+.brand-card:focus-visible .brand-card__word {
+  opacity: 1;
+  transform: scale(1);
+  animation: none;
+}
+@keyframes brand-burst {
+  0%, 16% {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+  }
+  42%, 66% {
+    width: 150%;
+    height: 280%;
+    border-radius: 24px;
+    box-shadow: none;
+  }
+  100% {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+  }
+}
+@keyframes brand-icon {
+  0%, 20% { opacity: 1; transform: scale(1); }
+  44%, 64% { opacity: 0; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes brand-word {
+  0%, 20% { opacity: 0; transform: scale(0.88); }
+  44%, 64% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.88); }
+}
+@media (hover: none) {
+  .brand-card__burst {
+    width: 150%;
+    height: 280%;
+    border-radius: 24px;
+    background: linear-gradient(145deg, #0d47a1, #1976d2 58%, #0288d1);
+    box-shadow: none;
+    animation: none;
+  }
+  .brand-card__icon {
+    opacity: 0;
+    animation: none;
+  }
+  .brand-card__word {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-card__burst,
+  .brand-card__icon,
+  .brand-card__word {
+    animation: none;
+    transition: none;
+  }
 }
 .landing-section {
   padding: 36px 16px;
@@ -371,8 +446,7 @@ onMounted(async () => {
 }
 .landing-card::before,
 .landing-benefit::before,
-.landing-step::before,
-.landing-plan::before {
+.landing-step::before {
   content: '';
   position: absolute;
   left: 0;
@@ -383,13 +457,11 @@ onMounted(async () => {
 }
 .landing-card,
 .landing-benefit,
-.landing-plan,
 .landing-step {
   transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
 .landing-card:hover,
 .landing-benefit:hover,
-.landing-plan:hover,
 .landing-step:hover {
   transform: translateY(-4px);
   box-shadow: 0 14px 32px rgba(13, 71, 161, 0.14);
@@ -426,66 +498,6 @@ onMounted(async () => {
   margin: 0;
   line-height: 1.45;
   font-size: 0.9rem;
-}
-.landing-plan {
-  background: white;
-  border-radius: 12px;
-  padding: 18px;
-  height: 100%;
-  border: 2px solid #e8ecef;
-  position: relative;
-  overflow: hidden;
-}
-.landing-plan--featured {
-  border-color: #1976d2;
-  box-shadow: 0 8px 24px rgba(25, 118, 210, 0.15);
-}
-.landing-plan--featured:hover {
-  box-shadow: 0 16px 36px rgba(25, 118, 210, 0.22);
-}
-.landing-plan__ribbon {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #1976d2;
-  color: white;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 999px;
-}
-.landing-plan h3 {
-  margin: 0 0 6px;
-  font-size: 1.15rem;
-}
-.landing-plan__desc {
-  color: #5f6f77;
-  min-height: 36px;
-  font-size: 0.9rem;
-}
-.landing-plan__price {
-  margin: 10px 0 2px;
-}
-.landing-plan__amount {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #1976d2;
-}
-.landing-plan__period {
-  color: #5f6f77;
-}
-.landing-plan__features {
-  list-style: none;
-  padding: 0;
-  margin: 10px 0 0;
-  font-size: 0.88rem;
-}
-.landing-plan__features li {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  margin-bottom: 5px;
-  color: #3d4f56;
 }
 .landing-contact-item {
   display: flex;
@@ -588,13 +600,11 @@ onMounted(async () => {
 @media (prefers-reduced-motion: reduce) {
   .landing-card,
   .landing-benefit,
-  .landing-plan,
   .landing-step {
     transition: none;
   }
   .landing-card:hover,
   .landing-benefit:hover,
-  .landing-plan:hover,
   .landing-step:hover {
     transform: none;
   }
